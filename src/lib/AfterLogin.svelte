@@ -8,8 +8,6 @@
 	import { deployUser, getUserStatus } from './motley_cue';
 	import MyCodeArea from './MyCodeArea.svelte';
 
-	let username: string | undefined = undefined;
-
 	onMount(async () => {
 		try {
 			$uiBlock = true;
@@ -18,9 +16,9 @@
 			let status = await getUserStatus(fetch, mcEndpoint, token);
 			if (status.state === 'not_deployed') {
 				let deployment = await deployUser(fetch, mcEndpoint, token);
-				username = deployment.credentials.ssh_user;
+				$loginParams.username = deployment.credentials.ssh_user;
 			} else {
-				username = status.message.split(' ')[1];
+				$loginParams.username = status.message.split(' ')[1];
 			}
 		} catch (e) {
 			$errorMessage = 'Please log in again.';
@@ -29,8 +27,6 @@
 			$uiBlock = false;
 		}
 	});
-
-	$: console.log({ username });
 
 	const handleSSH = async () => {
 		goto('/ssh');
@@ -65,12 +61,16 @@
 <div class="mt-8 space-6 rounded-md shadow-sm flex flex-col gap-4">
 	<MyCodeArea
 		label="SSH commandline"
-		value={`ssh ${username}@${$loginParams?.sshHost?.hostname} -p ${$loginParams?.sshHost?.port}`}
+		id="sshCmd"
+		value={`ssh -p ${$loginParams?.sshHost?.port} ${$loginParams?.username}@${$loginParams?.sshHost?.hostname}`}
 	/>
-	<MyCodeArea label="Access Token" value={$page.data.session?.access_token ?? ''} />
+	<MyCodeArea label="Access Token" id="token" value={$page.data.session?.access_token ?? ''} />
 	<MyCodeArea
-		label="Full mccli command"
-		value={`mccli ssh --iss ${$loginParams?.op} --token ${$page.data.session?.access_token ?? ''}`}
+		label="mccli command"
+		id="mccliCmd"
+		value={`mccli ssh --mc-endpoint ${$loginParams?.mcEndpoint.toString()} --iss ${
+			$loginParams?.op
+		} --token ${$page.data.session?.access_token ?? ''} ${$loginParams?.sshHost?.hostname}`}
 	/>
 	<MyButton on:click={handleSSH}>Web SSH login</MyButton>
 </div>

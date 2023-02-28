@@ -20,7 +20,7 @@
 		const xterm = await import('xterm');
 		if (termDiv) {
 			var term = new xterm.Terminal({
-				scrollback: 0,
+				scrollback: 1000,
 				scrollOnUserInput: true,
 				smoothScrollDuration: 100,
 				cursorBlink: true,
@@ -35,9 +35,9 @@
 			term.focus();
 
 			const ws_url = new URL('ws://localhost:8444/ws/connect');
-			ws_url.searchParams.set('sshHostname', $loginParams?.sshHost?.hostname);
-			ws_url.searchParams.set('sshPort', $loginParams?.sshHost?.port);
-			ws_url.searchParams.set('username', 'diana');
+			ws_url.searchParams.set('sshHostname', $loginParams?.sshHost.hostname);
+			ws_url.searchParams.set('sshPort', $loginParams?.sshHost.port);
+			ws_url.searchParams.set('username', $loginParams?.username);
 
 			let timeout: NodeJS.Timeout | undefined = undefined;
 
@@ -53,7 +53,10 @@
 			};
 			ws.onclose = (ev: CloseEvent) => {
 				console.log('WebSocket closed', { ev });
-				$errorMessage = ev.reason;
+				if (ev.code !== 1000) {
+					// 1000 = normal close (https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
+					$errorMessage = ev.reason;
+				}
 				setTimeout(() => {
 					goto('/');
 				}, 500);

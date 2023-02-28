@@ -15,7 +15,7 @@ function fromLocalStorage<T>(key: string, initialValue: T): () => T {
 function toLocalStorage<T>(store: Writable<T>, key: string): void {
 	if (browser) {
 		store.subscribe((value) => {
-			let json = JSON.stringify(value);
+			const json = JSON.stringify(value);
 
 			window.localStorage.setItem(key, json);
 		});

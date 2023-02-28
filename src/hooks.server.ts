@@ -48,13 +48,13 @@ declare module '@auth/core/types' {
 		};
 		expires: string;
 		access_token?: string;
-		profile?: any;
+		profile?: unknown;
 	}
 }
 
 declare module '@auth/core/jwt' {
 	interface JWT {
 		access_token?: string;
-		profile?: any;
+		profile?: unknown;
 	}
 }

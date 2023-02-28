@@ -134,7 +134,8 @@
 				mcEndpoint,
 				op,
 				scope,
-				sshHost
+				sshHost,
+				username: ''
 			};
 			await signIn(op, { scope });
 		} catch {
