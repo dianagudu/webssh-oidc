@@ -1,5 +1,5 @@
-import type { Provider } from '@auth/core/providers';
 import type { Handle } from '@sveltejs/kit';
+import type { Provider } from '@auth/core/providers';
 import { SvelteKitAuth } from '@auth/sveltekit';
 
 import Google from '@auth/core/providers/google';
@@ -16,22 +16,26 @@ export const handle = (async (e) => {
 			DeepHDC({ clientId: DEEP_HDC_ID, clientSecret: DEEP_HDC_SECRET })
 		] as Provider[],
 		callbacks: {
-			async jwt({ token, account, profile }) {
+			async jwt({ token, account }) {
 				// Persist the OIDC access_token to the token right after signin
 				if (account) {
-					token.access_token = account.access_token;
-				}
-				if (profile) {
-					token.profile = profile;
+					// console.log({ account });
+					token.accessToken = account.access_token;
+					if (account.expires_in) {
+						token.expiresAt = Date.now() + account.expires_in;
+					}
 				}
 				return token;
 			},
 			async session({ session, token }) {
 				// Send properties to the client, like an access_token from a provider.
-				if (token) {
-					session.access_token = token.access_token;
-					session.profile = token.profile;
-				}
+				session.accessToken = token.accessToken;
+				session.expiresAt = token.expiresAt;
+				// console.log({ session, token });
+
+				// if (session.expiresAt && session.expiresAt < Date.now()) {
+				// 	session.accessToken = undefined;
+				// }
 				return session;
 			}
 		}
@@ -46,15 +50,14 @@ declare module '@auth/core/types' {
 			email?: string | null;
 			preferred_username?: string | null;
 		};
-		expires: string;
-		access_token?: string;
-		profile?: unknown;
+		expiresAt?: number;
+		accessToken?: string;
 	}
 }
 
 declare module '@auth/core/jwt' {
 	interface JWT {
-		access_token?: string;
-		profile?: unknown;
+		accessToken?: string;
+		expiresAt?: number;
 	}
 }

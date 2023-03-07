@@ -7,11 +7,15 @@
 	import { goto } from '$app/navigation';
 	import { deployUser, getUserStatus } from './motley_cue';
 	import MyCodeArea from './MyCodeArea.svelte';
+	import MyBanner from './MyBanner.svelte';
 
 	onMount(async () => {
 		try {
 			$uiBlock = true;
-			const token = $page.data.session?.access_token;
+			const token = $page.data.session?.accessToken;
+			if (!token || !$loginParams) {
+				throw new Error('No session or login data.');
+			}
 			const mcEndpoint = $loginParams?.mcEndpoint;
 			let status = await getUserStatus(fetch, mcEndpoint, token);
 			if (status.state === 'not_deployed') {
@@ -43,6 +47,7 @@
 	};
 </script>
 
+<MyBanner />
 <div class="flex justify-end">
 	<div class="block m-1 pb-0.5 font-medium text-mc-blue dark:text-white">
 		{$page.data.session?.user?.name}
@@ -64,13 +69,13 @@
 		id="sshCmd"
 		value={`ssh -p ${$loginParams?.sshHost?.port} ${$loginParams?.username}@${$loginParams?.sshHost?.hostname}`}
 	/>
-	<MyCodeArea label="Access Token" id="token" value={$page.data.session?.access_token ?? ''} />
+	<MyCodeArea label="Access Token" id="token" value={$page.data.session?.accessToken ?? ''} />
 	<MyCodeArea
 		label="mccli command"
 		id="mccliCmd"
 		value={`mccli ssh --mc-endpoint ${$loginParams?.mcEndpoint.toString()} --iss ${
 			$loginParams?.op
-		} --token ${$page.data.session?.access_token ?? ''} ${$loginParams?.sshHost?.hostname}`}
+		} --token ${$page.data.session?.accessToken ?? ''} ${$loginParams?.sshHost?.hostname}`}
 	/>
 	<MyButton on:click={handleSSH}>Web SSH login</MyButton>
 </div>

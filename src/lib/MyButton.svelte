@@ -20,8 +20,8 @@
 <style lang="postcss">
 	.button {
 		@apply relative flex w-full justify-center rounded-md border border-transparent;
-		@apply bg-indigo-600 py-2 px-4 text-base font-medium text-white enabled:hover:bg-indigo-700;
-		@apply focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+		@apply bg-mc-blue-500 py-2 px-4 text-base font-medium text-white enabled:hover:bg-mc-blue-400;
+		@apply focus:outline-none focus:ring-2 focus:ring-mc-blue-400 focus:ring-offset-2;
 		@apply disabled:opacity-50 disabled:cursor-not-allowed;
 	}
 </style>

@@ -1,21 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import logo from '$lib/assets/mccli-notext.svg';
 	import LoginComponent from '$lib/LoginComponent.svelte';
 	import AfterLogin from '$lib/AfterLogin.svelte';
-	import MyAlert from '$lib/MyAlert.svelte';
-	import { errorMessage, uiBlock } from '$lib/stores';
+	import { uiBlock } from '$lib/stores';
 </script>
 
 <div class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-	<div class="w-full max-w-md space-y-8">
-		<div>
-			<img class="mx-auto h-12 w-auto" src={logo} alt="motley-cue logo" />
-			<h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-mc-gray">SSH with OIDC</h2>
-		</div>
-		{#if $errorMessage}
-			<MyAlert />
-		{/if}
+	<div class="w-full max-w-2xl space-y-8">
 		{#if $page.data.session === null}
 			<LoginComponent />
 		{:else}
@@ -53,7 +44,6 @@
 				<!-- end loading icon -->
 			</div>
 		</div>
-
 		<!-- end loading overlay -->
 	{/if}
 </div>

@@ -4,11 +4,12 @@
 	import { PUBLIC_MOTLEY_CUE_API, PUBLIC_SSH_HOST_FQDN, PUBLIC_SSH_PORT } from '$env/static/public';
 
 	import MyInputHost from '$lib/MyInputHost.svelte';
-	import MySelectOp from '$lib/MySelectOP.svelte';
+	import MySelect from '$lib/MySelect.svelte';
 	import MyButton from '$lib/MyButton.svelte';
 	import { isValidHost, hostSchema, resetHost, type Host } from '$lib/types';
 	import { loadOps } from '$lib/motley_cue';
 	import { errorMessage, loginParams, uiBlock } from '$lib/stores';
+	import MyBanner from './MyBanner.svelte';
 
 	// default settings
 	let defaultSsh = { ...resetHost };
@@ -30,6 +31,16 @@
 	let selectedOp: string | undefined = undefined;
 	let hasSelectedOp = false;
 	let canSubmit = false;
+
+	let opList: string[] | undefined;
+
+	$: {
+		if (supportedOps) {
+			opList = Object.values(supportedOps);
+		} else {
+			opList = undefined;
+		}
+	}
 
 	onMount(async () => {
 		try {
@@ -117,6 +128,7 @@
 	};
 	const resetOPs = () => {
 		supportedOps = {};
+		mcHost = { ...resetHost };
 		validMc = false;
 		hasSelectedOp = false;
 		selectedOp = undefined;
@@ -145,63 +157,80 @@
 	};
 </script>
 
-<form class="mt-8 space-y-6" action="#" method="POST" on:submit|preventDefault={handleLogin}>
-	<input type="hidden" name="remember" value="true" />
-	<div class="-space-y-px rounded-md shadow-sm">
-		<MyInputHost
-			title="motley_cue"
-			host={mcHost}
-			defaultHost={defaultMc}
-			showProtocol={true}
-			customise={JSON.stringify(defaultMc) === JSON.stringify(resetHost)}
-			on:change={debouncedReloadOPs}
-			on:reset={debouncedResetOPs}
-			disabled={$uiBlock}
-		/>
-		<MyInputHost
-			title="SSH"
-			host={sshHost}
-			defaultHost={defaultSsh}
-			customise={JSON.stringify(defaultSsh) === JSON.stringify(resetHost)}
-			disabled={$uiBlock}
-			on:change={({ detail }) => {
-				sshHost = { ...detail };
-				validSsh = true;
-			}}
-			on:reset={() => {
-				validSsh = false;
-			}}
-		/>
-		<MySelectOp
-			{supportedOps}
-			{selectedOp}
-			disabled={$uiBlock}
-			on:select={({ detail }) => {
-				selectedOp = detail.id;
-				hasSelectedOp = true;
-			}}
-		/>
-	</div>
-
-	<div>
-		<MyButton disabled={!canSubmit || $uiBlock} on:click={handleLogin}>
-			<span class="absolute inset-y-0 left-0 flex items-center pl-3">
-				<!-- Heroicon name: mini/lock-closed -->
-				<svg
-					class="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 20 20"
-					fill="currentColor"
-					aria-hidden="true"
+<div class="bg-white rounded-lg shadow sm:max-w-[70%] mx-auto p-10">
+	<MyBanner />
+	<form class="mt-8 space-y-6" action="#" method="POST" on:submit|preventDefault={handleLogin}>
+		<input type="hidden" name="remember" value="true" />
+		<div class="-space-y-px rounded-md">
+			<MyInputHost
+				title="motley_cue"
+				host={mcHost}
+				defaultHost={defaultMc}
+				showProtocol={true}
+				customise={JSON.stringify(defaultMc) === JSON.stringify(resetHost)}
+				on:change={debouncedReloadOPs}
+				on:reset={debouncedResetOPs}
+				disabled={$uiBlock}
+			/>
+			<MyInputHost
+				title="SSH"
+				host={sshHost}
+				defaultHost={defaultSsh}
+				customise={JSON.stringify(defaultSsh) === JSON.stringify(resetHost)}
+				disabled={$uiBlock}
+				on:change={({ detail }) => {
+					sshHost = { ...detail };
+					validSsh = true;
+				}}
+				on:reset={() => {
+					sshHost = { ...resetHost };
+					validSsh = false;
+				}}
+			/>
+			<div>
+				<label for="op" class="block font-medium text-mc-gray pt-4 pb-2 pl-1"
+					>OIDC identity provider</label
 				>
-					<path
-						fill-rule="evenodd"
-						d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
-						clip-rule="evenodd"
+				<div class="text-sm">
+					<MySelect
+						name="op"
+						values={opList}
+						descriptionTexts={{
+							loading: 'Loading...',
+							novals: 'No supported OPs',
+							choose: 'Choose from supported OPs'
+						}}
+						value={selectedOp}
+						disabled={$uiBlock || !supportedOps || !Object.values(supportedOps).length}
+						on:select={({ detail }) => {
+							selectedOp = detail;
+							hasSelectedOp = true;
+						}}
 					/>
-				</svg>
-			</span>
-			Log in
-		</MyButton>
-	</div>
-</form>
+				</div>
+			</div>
+		</div>
+
+		<div>
+			<MyButton disabled={!canSubmit || $uiBlock} on:click={handleLogin}>
+				<span class="absolute inset-y-0 left-0 flex items-center pl-3">
+					<!-- Heroicon name: mini/lock-closed -->
+					<svg
+						class="h-5 w-5 text-mc-blue-400 group-hover:text-mc-blue-300"
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+						aria-hidden="true"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</span>
+				Log in
+			</MyButton>
+		</div>
+	</form>
+</div>

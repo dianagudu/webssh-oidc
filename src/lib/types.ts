@@ -13,8 +13,8 @@ export const hostSchema = z.object({
 export type Host = z.output<typeof hostSchema>;
 export const resetHost: Host = {
 	hostname: '',
-	port: 0,
-	protocol: 'http'
+	port: 0
+	// protocol: 'http'
 };
 
 export function isValidHost(host: Host): boolean {

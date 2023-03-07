@@ -5,9 +5,9 @@
 @tailwind utilities;
 
 @layer base {
-	:root {
+	/* :root {
 		--color-mc-blue: 0 87 146;
 		--color-mc-orange: 253 95 0;
 		--color-mc-gray: 102 102 102;
-	}
+	} */
 }

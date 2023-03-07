@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { hostSchema, resetHost, isValidHost, type Host } from '$lib/types';
 	import { z } from 'zod';
+	import MySelect from './MySelect.svelte';
 
 	export let title: string;
 	export let host: Host;
@@ -11,25 +12,30 @@
 	export let customise: boolean;
 
 	let myForm: HTMLFormElement;
+	let protocol: string | undefined = host?.protocol;
 
 	const dispatch = createEventDispatcher<{ change: Host }>();
 	const dispatchReset = createEventDispatcher();
 
 	let errorStates: { [index: string]: boolean } = {
 		hostname: false,
-		port: false
+		port: false,
+		protocol: false
 	};
 
 	function formChange(e: Event) {
 		try {
-			const fd = new FormData(myForm);
-			const data = Object.fromEntries(fd.entries());
-			host = hostSchema.parse(data);
-			dispatch('change', host);
 			errorStates = {
 				hostname: false,
-				port: false
+				port: false,
+				protocol: false
 			};
+			const fd = new FormData(myForm);
+			if (showProtocol) fd.append('protocol', protocol ?? '');
+			const data = Object.fromEntries(fd.entries());
+			console.log({ data });
+			host = hostSchema.parse(data);
+			dispatch('change', host);
 		} catch (err) {
 			console.log({ err }, err instanceof z.ZodError);
 			if (err instanceof z.ZodError) {
@@ -40,7 +46,8 @@
 			} else if (err instanceof Error) {
 				errorStates = {
 					hostname: true,
-					port: true
+					port: true,
+					protocol: true
 				};
 			}
 		}
@@ -57,7 +64,8 @@
 		}
 		errorStates = {
 			hostname: false,
-			port: false
+			port: false,
+			protocol: false
 		};
 	}
 </script>
@@ -81,18 +89,24 @@
 	</div>
 </div>
 <form on:change={formChange} bind:this={myForm}>
-	<div class="flex flex-row dualinput">
+	<div class="dualinput" class:triple={showProtocol}>
 		{#if showProtocol}
-			<select
-				id="protocol"
+			<MySelect
 				name="protocol"
+				hasError={errorStates.protocol}
 				value={host.protocol}
 				disabled={!customise || disabled}
-				required
-			>
-				<option value="http">http</option>
-				<option value="https">https</option>
-			</select>
+				values={['http', 'https']}
+				descriptionTexts={{
+					loading: '...',
+					novals: '',
+					choose: '--'
+				}}
+				on:select={({ detail }) => {
+					protocol = detail;
+					formChange(new Event('change'));
+				}}
+			/>
 		{/if}
 		<input
 			id="hostname"
@@ -104,6 +118,7 @@
 			required
 			class:error_state={errorStates.hostname}
 			class:middle-child={showProtocol}
+			class="min-w-0"
 		/>
 		<input
 			id="port"
@@ -120,10 +135,17 @@
 
 <style lang="postcss">
 	.dualinput {
+		@apply grid gap-0;
+		@apply grid-cols-[1fr,6rem];
+
+		&.triple {
+			@apply grid-cols-[5rem,1fr,6rem];
+		}
+
 		input {
-			@apply relative block px-3 py-2 w-full appearance-none rounded-md border focus:z-10 focus:outline-none sm:text-sm;
-			@apply border-gray-300 text-mc-gray placeholder-gray-300 focus:border-indigo-500 focus:ring-indigo-500;
-			@apply disabled:opacity-50;
+			@apply relative block px-3 py-2 appearance-none rounded-md border focus:z-10 focus:outline-none sm:text-sm;
+			@apply text-mc-gray placeholder-gray-300 focus:border-mc-blue-400 focus:ring-mc-blue-400;
+			@apply disabled:bg-gray-100 disabled:opacity-50;
 		}
 
 		input:first-child {
@@ -131,7 +153,7 @@
 		}
 
 		input:last-child {
-			@apply rounded-l-none w-24;
+			@apply rounded-l-none;
 		}
 
 		.middle-child {
@@ -140,18 +162,11 @@
 		.error_state {
 			@apply border-mc-orange text-mc-orange;
 		}
-
-		select {
-			@apply relative block px-3 py-2 w-full appearance-none rounded-md border focus:z-10 focus:outline-none sm:text-sm;
-			@apply border-gray-300 text-mc-gray placeholder-gray-300 focus:border-indigo-500 focus:ring-indigo-500;
-			@apply disabled:opacity-50;
-			@apply rounded-r-none w-28;
-		}
 	}
 
 	.checkbox {
 		@apply w-11 h-6 rounded-full;
-		@apply bg-gray-200 after:bg-white after:border-gray-300 peer-checked:bg-blue-600 peer-checked:after:border-white peer-focus:ring-blue-300;
+		@apply bg-gray-200 after:bg-white peer-checked:bg-mc-blue-400 peer-checked:after:border-white peer-focus:ring-mc-blue-200;
 		@apply after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:border after:rounded-full after:h-5 after:w-5 after:transition-all;
 		@apply peer-focus:ring-4;
 		@apply peer-checked:after:translate-x-full;

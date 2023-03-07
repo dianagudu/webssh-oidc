@@ -38,7 +38,7 @@ router.ws('/connect', function (ws, req) {
 		return;
 	}
 	(async () => {
-		console.log({ accessToken });
+		// console.log({ accessToken });
 		ssh
 			.connect({
 				host: sshHostname,

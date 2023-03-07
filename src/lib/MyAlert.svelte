@@ -6,7 +6,7 @@
 <div
 	in:slide={{ duration: 300 }}
 	out:slide={{ duration: 300 }}
-	class="p-4 mb-4 text-mc-orange rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+	class="p-4 m-4 text-mc-orange rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
 	role="alert"
 >
 	<div class="flex justify-between">

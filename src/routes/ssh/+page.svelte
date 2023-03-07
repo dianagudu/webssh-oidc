@@ -4,34 +4,49 @@
 	import { errorMessage, loginParams } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import 'xterm/css/xterm.css';
+	import { FitAddon } from 'xterm-addon-fit';
+	import { WebLinksAddon } from 'xterm-addon-web-links';
+	import ResizeObserver from 'svelte-resize-observer';
 
 	type WsCloseType = {
 		code: number;
 		data: string;
 	};
 
+	let fitAddon: FitAddon;
 	let termDiv: HTMLDivElement;
+
 	onMount(async () => {
-		const accessToken = $page.data.session?.access_token;
+		const accessToken = $page.data.session?.accessToken;
 		if (!accessToken || !loginParams) {
 			$errorMessage = 'Please log in again.';
 			goto('/');
 		}
-		const xterm = await import('xterm');
+		let xterm = await import('xterm');
 		if (termDiv) {
-			var term = new xterm.Terminal({
+			let term = new xterm.Terminal({
 				scrollback: 1000,
 				scrollOnUserInput: true,
 				smoothScrollDuration: 100,
+				rows: 48,
+				cols: 160,
 				cursorBlink: true,
 				cursorStyle: 'block',
+				fontFamily: 'Fira Code, monospace',
+				fontSize: 12,
 				theme: {
-					background: '#000000',
-					foreground: '#ffffff'
+					background: 'mc-gray-600',
+					foreground: 'mc-gray-100'
 				}
 			});
 
+			// loadd all addons
+			fitAddon = new FitAddon();
+			term.loadAddon(fitAddon);
+			term.loadAddon(new WebLinksAddon());
+
 			term.open(termDiv);
+			fitAddon.fit();
 			term.focus();
 
 			const ws_url = new URL('ws://localhost:8444/ws/connect');
@@ -61,27 +76,42 @@
 					goto('/');
 				}, 500);
 			};
-			timeout = setTimeout(() => {
-				$errorMessage = 'Could not connect to SSH server.';
-				goto('/');
-			}, 3000);
+			// timeout = setTimeout(() => {
+			// 	$errorMessage = 'Could not connect to SSH server.';
+			// 	goto('/');
+			// }, 3000);
 
 			return term.onKey(({ key }) => {
 				ws.send(key);
 			});
 		}
 	});
+
+	function handleResize(e: CustomEvent) {
+		if (fitAddon) {
+			fitAddon.fit();
+		}
+	}
 </script>
 
-<div class="flex justify-center">
+<div class="m-0 p-20">
 	<div
+		class="rounded overflow-clip bg-black shadow-md shadow-neutral-400 p-2"
 		bind:this={termDiv}
-		class="m-20 overflow-hidden rounded bg-black p-2 shadow-md shadow-neutral-400"
 	/>
+	<div class="absolute top-0 bottom-0 left-0 right-0">
+		<ResizeObserver on:resize={handleResize} />
+	</div>
 </div>
 
 <style>
-	:global(.xterm-viewport) {
+	:global(.xterm .xterm-viewport) {
+		/* see : https://github.com/xtermjs/xterm.js/issues/3564#issuecomment-1004417440 */
+		width: initial !important;
 		overflow-y: hidden !important;
+	}
+
+	:global(.xterm .xterm-scroll-area) {
+		visibility: hidden;
 	}
 </style>
