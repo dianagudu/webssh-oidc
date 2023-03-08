@@ -1,25 +1,17 @@
 import type { Handle } from '@sveltejs/kit';
-import type { Provider } from '@auth/core/providers';
 import { SvelteKitAuth } from '@auth/sveltekit';
 
-import Google from '@auth/core/providers/google';
-import DeepHDC from '$lib/providers/deephdc';
-
-import { google, deep } from '$env/static/private';
+import providers from '$lib/server/providers';
 
 export const handle = (async (e) => {
-	const [GOOGLE_ID, GOOGLE_SECRET] = google.split(':');
-	const [DEEP_HDC_ID, DEEP_HDC_SECRET] = deep.split(':');
 	return SvelteKitAuth({
-		providers: [
-			Google({ clientId: GOOGLE_ID, clientSecret: GOOGLE_SECRET }),
-			DeepHDC({ clientId: DEEP_HDC_ID, clientSecret: DEEP_HDC_SECRET })
-		] as Provider[],
+		providers: providers,
 		callbacks: {
-			async jwt({ token, account }) {
+			async jwt({ token, account, profile }) {
 				// Persist the OIDC access_token to the token right after signin
 				if (account) {
 					// console.log({ account });
+					console.log({ profile });
 					token.accessToken = account.access_token;
 					if (account.expires_in) {
 						token.expiresAt = Date.now() + account.expires_in;

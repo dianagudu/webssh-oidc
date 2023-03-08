@@ -76,10 +76,10 @@
 					goto('/');
 				}, 500);
 			};
-			// timeout = setTimeout(() => {
-			// 	$errorMessage = 'Could not connect to SSH server.';
-			// 	goto('/');
-			// }, 3000);
+			timeout = setTimeout(() => {
+				$errorMessage = 'Could not connect to SSH server.';
+				goto('/');
+			}, 3000);
 
 			return term.onKey(({ key }) => {
 				ws.send(key);

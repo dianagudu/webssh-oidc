@@ -1,6 +1,6 @@
 import type { OAuthUserConfig, OAuthConfig } from '@auth/core/providers';
 
-export interface DeepHDCProfile extends Record<string, any> {
+export interface DeepHDCProfile extends Record<string, unknown> {
 	aud: string;
 	azp: string;
 	email: string;
@@ -17,6 +17,8 @@ export interface DeepHDCProfile extends Record<string, any> {
 	picture: string;
 	sub: string;
 	preferred_username: string;
+	organisation_name: string;
+	groups: string[];
 }
 
 export default function DeepHDC<P extends DeepHDCProfile>(

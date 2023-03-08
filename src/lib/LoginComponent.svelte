@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { signIn } from '@auth/sveltekit/client';
-	import { PUBLIC_MOTLEY_CUE_API, PUBLIC_SSH_HOST_FQDN, PUBLIC_SSH_PORT } from '$env/static/public';
 
+	import MyBanner from './MyBanner.svelte';
 	import MyInputHost from '$lib/MyInputHost.svelte';
 	import MySelect from '$lib/MySelect.svelte';
 	import MyButton from '$lib/MyButton.svelte';
 	import { isValidHost, hostSchema, resetHost, type Host } from '$lib/types';
-	import { loadOps } from '$lib/motley_cue';
+	import { loadOpInfo, loadOps } from '$lib/motley_cue';
 	import { errorMessage, loginParams, uiBlock } from '$lib/stores';
-	import MyBanner from './MyBanner.svelte';
+	import { page } from '$app/stores';
+	import CONFIG from './config';
 
 	// default settings
 	let defaultSsh = { ...resetHost };
@@ -47,18 +48,15 @@
 			$uiBlock = true;
 			// load default settings from environment variables or use sane defaults
 			try {
-				defaultSsh = hostSchema.parse({
-					hostname: PUBLIC_SSH_HOST_FQDN,
-					port: parseInt(PUBLIC_SSH_PORT) || 22
-				});
+				defaultSsh = hostSchema.parse(CONFIG.sshHost);
 				sshHost = { ...defaultSsh };
 				validSsh = isValidHost(sshHost);
 			} catch (e) {
-				console.error(`Invalid SSH host: ${PUBLIC_SSH_HOST_FQDN}:${PUBLIC_SSH_PORT}`);
+				console.error(`Invalid SSH host: ${CONFIG.sshHost}`);
 			}
 
 			try {
-				defaultMcEndpoint = new URL(PUBLIC_MOTLEY_CUE_API);
+				defaultMcEndpoint = new URL(CONFIG.mcEndpoint);
 				defaultMc = hostSchema.parse({
 					hostname: defaultMcEndpoint.hostname,
 					port: defaultMcEndpoint.port,
@@ -68,7 +66,7 @@
 				validMc = isValidHost(mcHost);
 				mcEndpoint = defaultMcEndpoint;
 			} catch (e) {
-				console.error(`Invalid Motley Cue API endpoint: ${PUBLIC_MOTLEY_CUE_API}`);
+				console.error(`Invalid Motley Cue API endpoint: ${CONFIG.mcEndpoint}`);
 			}
 
 			defaultOps = await loadOps(fetch, mcEndpoint);
@@ -140,8 +138,13 @@
 		try {
 			$uiBlock = true;
 			let op = 'google';
+			op = 'deep-hdc';
+			// op = 'helmholtz-dev';
+			// op = 'egi-dev';
 			let scope = 'openid profile email';
-			// op = 'deep-hdc';
+			let opInfo = await loadOpInfo(fetch, mcEndpoint, selectedOp);
+			console.log(opInfo);
+			scope = opInfo.scopes.join(' ');
 			$loginParams = {
 				mcEndpoint,
 				op,
