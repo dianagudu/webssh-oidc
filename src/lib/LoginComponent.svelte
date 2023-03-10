@@ -9,7 +9,6 @@
 	import { isValidHost, hostSchema, resetHost, type Host } from '$lib/types';
 	import { loadOpInfo, loadOps } from '$lib/motley_cue';
 	import { errorMessage, loginParams, uiBlock } from '$lib/stores';
-	import { page } from '$app/stores';
 	import CONFIG from './config';
 
 	// default settings
@@ -140,7 +139,7 @@
 			let op = 'google';
 			op = 'deep-hdc';
 			// op = 'helmholtz-dev';
-			// op = 'egi-dev';
+			op = 'egi-dev';
 			let scope = 'openid profile email';
 			let opInfo = await loadOpInfo(fetch, mcEndpoint, selectedOp);
 			console.log(opInfo);

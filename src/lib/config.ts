@@ -1,19 +1,15 @@
-let CONFIG = {
-	mcEndpoint: '',
-	sshHost: { hostname: '', port: 0 } as { hostname: string; port: number }
-};
+import {
+	PUBLIC_MC_ENDPOINT_URL,
+	PUBLIC_SSH_HOSTNAME_FQDN,
+	PUBLIC_SSH_PORT
+} from '$env/static/public';
 
-try {
-	const myEnv = await import('$env/static/public');
-	CONFIG = {
-		mcEndpoint: myEnv.PUBLIC_MC_ENDPOINT_URL,
-		sshHost: {
-			hostname: myEnv.PUBLIC_SSH_HOSTNAME_FQDN,
-			port: parseInt(myEnv.PUBLIC_SSH_PORT)
-		} as { hostname: string; port: number }
-	};
-} catch (e) {
-	console.error(e);
-}
+const CONFIG = {
+	mcEndpoint: PUBLIC_MC_ENDPOINT_URL,
+	sshHost: {
+		hostname: PUBLIC_SSH_HOSTNAME_FQDN,
+		port: parseInt(PUBLIC_SSH_PORT) || 22
+	} as { hostname: string; port: number }
+};
 
 export default CONFIG;

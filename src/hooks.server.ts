@@ -5,13 +5,13 @@ import providers from '$lib/server/providers';
 
 export const handle = (async (e) => {
 	return SvelteKitAuth({
+		// secret: generate one??,
+		trustHost: true,
 		providers: providers,
 		callbacks: {
-			async jwt({ token, account, profile }) {
+			async jwt({ token, account }) {
 				// Persist the OIDC access_token to the token right after signin
 				if (account) {
-					// console.log({ account });
-					console.log({ profile });
 					token.accessToken = account.access_token;
 					if (account.expires_in) {
 						token.expiresAt = Date.now() + account.expires_in;
@@ -23,7 +23,6 @@ export const handle = (async (e) => {
 				// Send properties to the client, like an access_token from a provider.
 				session.accessToken = token.accessToken;
 				session.expiresAt = token.expiresAt;
-				// console.log({ session, token });
 
 				// if (session.expiresAt && session.expiresAt < Date.now()) {
 				// 	session.accessToken = undefined;
