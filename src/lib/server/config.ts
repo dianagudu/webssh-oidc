@@ -4,6 +4,7 @@ export type ProviderConfig = {
 	issuer: string;
 	clientId: string;
 	clientSecret: string;
+	id?: string;
 	name?: string;
 };
 

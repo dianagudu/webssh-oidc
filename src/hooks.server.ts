@@ -17,6 +17,15 @@ export const handle = (async (e) => {
 						token.expiresAt = Date.now() + account.expires_in;
 					}
 				}
+				// if (user) {
+				// 	const min_user = {
+				// 		name: user.name,
+				// 		email: user.email,
+				// 		preferred_username: user.preferred_username,
+				// 		eduperson_entitlement: user.eduperson_entitlement
+				// 	};
+				// 	token.user = min_user;
+				// }
 				return token;
 			},
 			async session({ session, token }) {

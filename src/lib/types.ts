@@ -28,14 +28,13 @@ export type OPInfo = {
 
 export type OP = {
 	id: string;
-	url: URL;
-	info?: OPInfo;
+	issuer: string;
 };
 
 export type LoginParams = {
 	mcEndpoint: URL;
-	op: string; // OP;
-	scope: string | string[];
+	op: OP;
+	opInfo: OPInfo;
 	sshHost: Host;
 	username: string;
 };

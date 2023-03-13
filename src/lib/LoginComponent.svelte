@@ -6,15 +6,16 @@
 	import MyInputHost from '$lib/MyInputHost.svelte';
 	import MySelect from '$lib/MySelect.svelte';
 	import MyButton from '$lib/MyButton.svelte';
-	import { isValidHost, hostSchema, resetHost, type Host } from '$lib/types';
+	import { isValidHost, hostSchema, resetHost, type Host, type OP } from '$lib/types';
 	import { loadOpInfo, loadOps } from '$lib/motley_cue';
 	import { errorMessage, loginParams, uiBlock } from '$lib/stores';
 	import CONFIG from './config';
+	import { page } from '$app/stores';
 
 	// default settings
 	let defaultSsh = { ...resetHost };
 	let defaultMc = { ...resetHost };
-	let defaultOps: { [key: string]: string };
+	let defaultOps: string[];
 	let defaultMcEndpoint: URL;
 
 	// settings for SSH server
@@ -27,20 +28,12 @@
 	let mcEndpoint: URL;
 
 	// selected OIDC provider from drop-down list
-	let supportedOps: { [key: string]: string } | undefined;
+	let supportedOps: string[] | undefined;
 	let selectedOp: string | undefined = undefined;
 	let hasSelectedOp = false;
 	let canSubmit = false;
 
-	let opList: string[] | undefined;
-
-	$: {
-		if (supportedOps) {
-			opList = Object.values(supportedOps);
-		} else {
-			opList = undefined;
-		}
-	}
+	let filteredOps: string[] | undefined;
 
 	onMount(async () => {
 		try {
@@ -69,7 +62,10 @@
 			}
 
 			defaultOps = await loadOps(fetch, mcEndpoint);
-			supportedOps = { ...defaultOps };
+			supportedOps = [...defaultOps];
+			filteredOps = supportedOps.filter((value: string) =>
+				Object.keys($page.data.providers).includes(value)
+			);
 		} catch (e) {
 			defaultMc = { ...resetHost };
 			mcHost = { ...resetHost };
@@ -83,6 +79,7 @@
 	const clear = () => {
 		$errorMessage = '';
 		supportedOps = undefined;
+		filteredOps = undefined;
 		hasSelectedOp = false;
 		selectedOp = undefined;
 	};
@@ -107,6 +104,9 @@
 		// for the default motley_cue server, use the pre-loaded OPs
 		if (JSON.stringify(mcHost) === JSON.stringify(defaultMc)) {
 			supportedOps = defaultOps;
+			filteredOps = supportedOps.filter((value: string) =>
+				Object.keys($page.data.providers).includes(value)
+			);
 			validMc = true;
 			return;
 		}
@@ -115,16 +115,20 @@
 		try {
 			$uiBlock = true;
 			supportedOps = await loadOps(fetch, mcEndpoint);
+			filteredOps = supportedOps.filter((value: string) =>
+				Object.keys($page.data.providers).includes(value)
+			);
 			validMc = true;
 		} catch (e) {
-			supportedOps = {};
+			supportedOps = [];
 			$errorMessage = 'Failed to load OIDC providers from motley_cue server';
 		} finally {
 			$uiBlock = false;
 		}
 	};
 	const resetOPs = () => {
-		supportedOps = {};
+		supportedOps = [];
+		filteredOps = [];
 		mcHost = { ...resetHost };
 		validMc = false;
 		hasSelectedOp = false;
@@ -136,22 +140,17 @@
 	const handleLogin = async () => {
 		try {
 			$uiBlock = true;
-			let op = 'google';
-			op = 'deep-hdc';
-			// op = 'helmholtz-dev';
-			op = 'egi-dev';
-			let scope = 'openid profile email';
+			let op = $page.data.providers[selectedOp];
+			// let scope = 'openid profile email';
 			let opInfo = await loadOpInfo(fetch, mcEndpoint, selectedOp);
-			console.log(opInfo);
-			scope = opInfo.scopes.join(' ');
 			$loginParams = {
 				mcEndpoint,
 				op,
-				scope,
+				opInfo,
 				sshHost,
 				username: ''
 			};
-			await signIn(op, { scope });
+			await signIn(op.id, { scope: opInfo.scopes });
 		} catch {
 			$uiBlock = false;
 			$errorMessage = 'Failed to login';
@@ -196,14 +195,14 @@
 				<div class="text-sm">
 					<MySelect
 						name="op"
-						values={opList}
+						values={filteredOps}
 						descriptionTexts={{
 							loading: 'Loading...',
 							novals: 'No supported OPs',
 							choose: 'Choose from supported OPs'
 						}}
 						value={selectedOp}
-						disabled={$uiBlock || !supportedOps || !Object.values(supportedOps).length}
+						disabled={$uiBlock || !filteredOps || !filteredOps.length}
 						on:select={({ detail }) => {
 							selectedOp = detail;
 							hasSelectedOp = true;

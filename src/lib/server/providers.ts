@@ -1,13 +1,16 @@
-import type { Provider } from '@auth/core/providers';
+import type { OAuth2Config } from '@auth/core/providers';
+import type { Profile } from '@auth/core/types';
 import Google from '@auth/core/providers/google';
+
 import DeepHDC from '$lib/server/providers/deephdc';
 import HelmholtzDev from '$lib/server/providers/helmholtz_dev';
 import EgiDev from '$lib/server/providers/egi_dev';
+import Generic from '$lib/server/providers/generic';
 
 import type { ProviderConfig } from '$lib/server/config';
 import CONFIG from '$lib/server/config';
 
-const providers = CONFIG.providers.map(loadProvider) as Provider[];
+const providers = CONFIG.providers.map(loadProvider) as OAuth2Config<Profile>[];
 
 function loadProvider(provider_config: ProviderConfig) {
 	const issuer = provider_config.issuer
@@ -35,7 +38,8 @@ function loadProvider(provider_config: ProviderConfig) {
 				clientSecret: provider_config.clientSecret
 			});
 		default:
-			console.log(`Unknown provider: ${issuer}`);
+			console.log(`Issuer ${issuer} not supported, using generic provider.`);
+			return Generic(provider_config);
 	}
 }
 

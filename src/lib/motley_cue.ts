@@ -6,7 +6,9 @@ export const loadOps = async (fetch: Fetch, mcEndpoint: URL) => {
 
 	const response = await fetch(url);
 	if (response.ok) {
-		return await response.json().then((json) => json.supported_OPs);
+		return await response
+			.json()
+			.then((json) => json.supported_OPs.map((op: string) => op.trim().replace(/\/+$/, '')));
 	} else {
 		throw new Error(`Could not get info from ${url} (${response.status} ${response.statusText})`);
 	}

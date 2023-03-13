@@ -28,8 +28,8 @@
 				scrollback: 1000,
 				scrollOnUserInput: true,
 				smoothScrollDuration: 100,
-				rows: 48,
-				cols: 160,
+				rows: 40,
+				cols: 80,
 				cursorBlink: true,
 				cursorStyle: 'block',
 				fontFamily: 'Fira Code, monospace',
@@ -94,13 +94,15 @@
 	}
 </script>
 
-<div class="m-0 p-20">
-	<div
-		class="rounded overflow-clip bg-black shadow-md shadow-neutral-400 p-2"
-		bind:this={termDiv}
-	/>
-	<div class="absolute top-0 bottom-0 left-0 right-0">
-		<ResizeObserver on:resize={handleResize} />
+<div class="flex min-h-full items-center justify-center">
+	<div class="m-0 lg:p-20 sm:p-0 w-full max-w-6xl">
+		<div
+			class="rounded overflow-clip bg-black shadow-md shadow-neutral-400 p-2"
+			bind:this={termDiv}
+		/>
+		<div class="absolute top-0 bottom-0 left-0 right-0">
+			<ResizeObserver on:resize={handleResize} />
+		</div>
 	</div>
 </div>
 
