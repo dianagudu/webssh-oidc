@@ -47,9 +47,11 @@
 	};
 
 	$: sshCmd = `ssh -p ${$loginParams?.sshHost?.port} ${$loginParams?.username}@${$loginParams?.sshHost?.hostname}`;
-	$: mccliCmd = `mccli --mc-endpoint ${$loginParams?.mcEndpoint.toString()} --token ${
-		$page.data.session?.accessToken ?? ''
-	} ssh -p ${$loginParams?.sshHost?.port} ${$loginParams?.sshHost?.hostname}`;
+	$: mccliCmd = `mccli --mc-endpoint ${$loginParams?.mcEndpoint
+		.toString()
+		.replace(/\/$/, '')} --token ${$page.data.session?.accessToken ?? ''} ssh -p ${
+		$loginParams?.sshHost?.port
+	} ${$loginParams?.sshHost?.hostname}`;
 </script>
 
 <MyBanner />
