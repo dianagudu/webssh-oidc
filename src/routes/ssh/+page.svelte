@@ -4,17 +4,17 @@
 	import { errorMessage, loginParams } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import 'xterm/css/xterm.css';
-	import { FitAddon } from 'xterm-addon-fit';
-	import { WebLinksAddon } from 'xterm-addon-web-links';
-	import ResizeObserver from 'svelte-resize-observer';
+	import ResizeObserver from 'resize-observer-polyfill';
 
-	type WsCloseType = {
-		code: number;
-		data: string;
-	};
-
-	let fitAddon: FitAddon;
 	let termDiv: HTMLDivElement;
+	let handleResize: () => void = () => {};
+	let RO: ResizeObserver = new ResizeObserver((entries) => {
+		for (let entry of entries) {
+			// console.log('resize');
+			// console.log({ entry });
+			handleResize();
+		}
+	});
 
 	onMount(async () => {
 		const accessToken = $page.data.session?.accessToken;
@@ -22,9 +22,12 @@
 			$errorMessage = 'Please log in again.';
 			goto('/');
 		}
-		let xterm = await import('xterm');
 		if (termDiv) {
-			let term = new xterm.Terminal({
+			const { Terminal } = await import('xterm');
+			const { FitAddon } = await import('xterm-addon-fit');
+			const { WebLinksAddon } = await import('xterm-addon-web-links');
+
+			let term = new Terminal({
 				scrollback: 1000,
 				scrollOnUserInput: true,
 				smoothScrollDuration: 100,
@@ -40,14 +43,21 @@
 				}
 			});
 
-			// loadd all addons
-			fitAddon = new FitAddon();
+			// load all addons
+			const fitAddon = new FitAddon();
 			term.loadAddon(fitAddon);
 			term.loadAddon(new WebLinksAddon());
 
 			term.open(termDiv);
 			fitAddon.fit();
 			term.focus();
+
+			handleResize = () => {
+				if (fitAddon) {
+					fitAddon.fit();
+				}
+			};
+			RO.observe(termDiv);
 
 			const ws_url = new URL('ws://localhost:8444/ws/connect');
 			ws_url.searchParams.set('sshHostname', $loginParams?.sshHost.hostname);
@@ -86,12 +96,6 @@
 			});
 		}
 	});
-
-	function handleResize(e: CustomEvent) {
-		if (fitAddon) {
-			fitAddon.fit();
-		}
-	}
 </script>
 
 <div class="flex min-h-full items-center justify-center">
@@ -100,9 +104,6 @@
 			class="rounded overflow-clip bg-black shadow-md shadow-neutral-400 p-2"
 			bind:this={termDiv}
 		/>
-		<div class="absolute top-0 bottom-0 left-0 right-0">
-			<ResizeObserver on:resize={handleResize} />
-		</div>
 	</div>
 </div>
 
