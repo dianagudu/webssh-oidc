@@ -80,6 +80,9 @@ router.ws('/connect', function (ws, req) {
 							// console.log('SEND: ' + msg);
 							shell.write(msg);
 						});
+						ws.on('close', () => {
+							ssh.dispose();
+						});
 					});
 			})
 			.catch((err) => {
