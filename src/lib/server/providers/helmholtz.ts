@@ -1,6 +1,6 @@
 import type { OAuthUserConfig, OAuthConfig } from '@auth/core/providers';
 
-export interface HelmholtzDevProfile extends Record<string, unknown> {
+export interface HelmholtzProfile extends Record<string, unknown> {
 	aud: string;
 	azp: string;
 	email: string;
@@ -24,14 +24,14 @@ export interface HelmholtzDevProfile extends Record<string, unknown> {
 	eduperson_scoped_affiliation: string[];
 }
 
-export default function HelmholtzDev<P extends HelmholtzDevProfile>(
+export default function Helmholtz<P extends HelmholtzProfile>(
 	options: OAuthUserConfig<P>
 ): OAuthConfig<P> {
 	return {
-		id: 'helmholtz-dev',
-		name: 'Helmholtz AAI dev',
+		id: 'helmholtz',
+		name: 'Helmholtz AAI',
 		type: 'oidc',
-		issuer: 'https://login-dev.helmholtz.de/oauth2',
+		issuer: 'https://login.helmholtz.de/oauth2',
 		authorization: {
 			params: {
 				scope:

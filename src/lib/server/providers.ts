@@ -3,8 +3,12 @@ import type { Profile } from '@auth/core/types';
 import Google from '@auth/core/providers/google';
 
 import DeepHDC from '$lib/server/providers/deephdc';
+import Helmholtz from '$lib/server/providers/helmholtz';
 import HelmholtzDev from '$lib/server/providers/helmholtz_dev';
+import Egi from '$lib/server/providers/egi';
 import EgiDev from '$lib/server/providers/egi_dev';
+import SimpleSaml from '$lib/server/providers/simplesaml';
+import Wlcg from '$lib/server/providers/wlcg';
 import Generic from '$lib/server/providers/generic';
 
 import type { ProviderConfig } from '$lib/server/config';
@@ -27,6 +31,11 @@ function loadProvider(provider_config: ProviderConfig) {
 				clientId: provider_config.clientId,
 				clientSecret: provider_config.clientSecret
 			});
+		case 'https://aai.egi.eu/auth/realms/egi':
+			return Egi({
+				clientId: provider_config.clientId,
+				clientSecret: provider_config.clientSecret
+			});
 		case 'https://iam.deep-hybrid-datacloud.eu':
 			return DeepHDC({
 				clientId: provider_config.clientId,
@@ -34,6 +43,21 @@ function loadProvider(provider_config: ProviderConfig) {
 			});
 		case 'https://login-dev.helmholtz.de/oauth2':
 			return HelmholtzDev({
+				clientId: provider_config.clientId,
+				clientSecret: provider_config.clientSecret
+			});
+		case 'https://login.helmholtz.de/oauth2':
+			return Helmholtz({
+				clientId: provider_config.clientId,
+				clientSecret: provider_config.clientSecret
+			});
+		case 'https://wlcg.cloud.cnaf.infn.it':
+			return Wlcg({
+				clientId: provider_config.clientId,
+				clientSecret: provider_config.clientSecret
+			});
+		case 'https://et3.gndev.hexaa.eu':
+			return SimpleSaml({
 				clientId: provider_config.clientId,
 				clientSecret: provider_config.clientSecret
 			});
