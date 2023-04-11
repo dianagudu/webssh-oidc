@@ -1,0 +1,8 @@
+services:
+  webssh-oidc:
+    build: .
+    image: webssh-oidc
+    ports:
+      - "8444:8444"
+    volumes:
+      - ./config:/config
