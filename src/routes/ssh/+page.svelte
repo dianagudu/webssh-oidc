@@ -59,7 +59,7 @@
 			};
 			RO.observe(termDiv);
 
-			const ws_url = new URL('ws://localhost:8444/ws/connect');
+			const ws_url = new URL(`ws://${$page.url.hostname}:${$page.url.port}/ws/connect`);
 			ws_url.searchParams.set('sshHostname', $loginParams?.sshHost.hostname);
 			ws_url.searchParams.set('sshPort', $loginParams?.sshHost.port);
 			ws_url.searchParams.set('username', $loginParams?.username);
@@ -77,7 +77,7 @@
 				term.write(event.data);
 			};
 			ws.onclose = (ev: CloseEvent) => {
-				console.log('WebSocket closed', { ev });
+				// console.log('WebSocket closed', { ev });
 				if (ev.code !== 1000) {
 					// 1000 = normal close (https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
 					$errorMessage = ev.reason;
