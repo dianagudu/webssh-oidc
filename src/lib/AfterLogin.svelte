@@ -18,7 +18,11 @@
 			}
 			const mcEndpoint = $loginParams?.mcEndpoint;
 			let status = await getUserStatus(fetch, mcEndpoint, token);
-			if (status.state === 'not_deployed') {
+			if (status.error) {
+				$errorMessage =
+					status.error +
+					(`: ${status.error_description}` || `: ${status.error_details?.check_details}` || '');
+			} else if (status.state === 'not_deployed') {
 				let deployment = await deployUser(fetch, mcEndpoint, token);
 				$loginParams.username = deployment.credentials.ssh_user;
 			} else {
