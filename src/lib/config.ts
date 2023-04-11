@@ -1,14 +1,16 @@
-import {
-	PUBLIC_MC_ENDPOINT_URL,
-	PUBLIC_SSH_HOSTNAME_FQDN,
-	PUBLIC_SSH_PORT
-} from '$env/static/public';
+// import {
+// 	PUBLIC_MC_ENDPOINT_URL,
+// 	PUBLIC_SSH_HOSTNAME_FQDN,
+// 	PUBLIC_SSH_PORT
+// } from '$env/static/public';
+
+import { env } from '$env/dynamic/public';
 
 const CONFIG = {
-	mcEndpoint: PUBLIC_MC_ENDPOINT_URL,
+	mcEndpoint: env.PUBLIC_MC_ENDPOINT_URL,
 	sshHost: {
-		hostname: PUBLIC_SSH_HOSTNAME_FQDN,
-		port: parseInt(PUBLIC_SSH_PORT) || 22
+		hostname: env.PUBLIC_SSH_HOSTNAME_FQDN,
+		port: parseInt(env.PUBLIC_SSH_PORT) || 22
 	} as { hostname: string; port: number }
 };
 
