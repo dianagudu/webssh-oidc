@@ -37,7 +37,7 @@
 			x
 		</button>
 	</div>
-	<div class="mt-2 mb-4 text-sm">
+	<div class="mt-2 mb-4 text-sm whitespace-pre-wrap">
 		{$errorMessage}
 	</div>
 </div>
