@@ -1,5 +1,5 @@
 {
-	"name": "webssh-oidc-2",
+	"name": "webssh-oidc",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {

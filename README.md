@@ -24,3 +24,36 @@ You can preview the production build with `npm run preview`.
 ```bash
 npm run start
 ```
+
+## Build and run docker image
+
+After building the app, you can build the docker image:
+
+```bash
+docker build -t webssh-oidc .
+```
+
+To run the docker image, you first need to configure the environment variables.
+
+```bash
+cp .env.example .env
+```
+
+Then create OIDC clients with the providers you want to use and add them to the `config/default.yml` file (see [config/default.yml.example](config/default.yml.example) for an example configuration).
+The redirect URI should be `http://localhost:8444/auth/callback/{provider_id}`, where `{provider_id}` is the id of the OIDC provider.
+
+List of supported providers and their corresponding ids:
+
+- `google` for `https://accounts.google.com`
+- `egi` for `https://aai.egi.eu/auth/realms/egi`
+- `egi-dev` for `https://aai-dev.egi.eu/auth/realms/egi`
+- `wlcg` for `https://wlcg.cloud.cnaf.infn.it`
+- `helmholtz` for `https://login.helmholtz.de/oauth2`
+- `helmholtz-dev` for `https://login-dev.helmholtz.de/oauth2`
+- `deep-hdc` for `https://iam.deep-hybrid-datacloud.eu`
+
+You can then spin up a container with:
+
+```bash
+docker-compose up
+```
