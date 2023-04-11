@@ -141,7 +141,6 @@
 		try {
 			$uiBlock = true;
 			let op = $page.data.providers[selectedOp];
-			// let scope = 'openid profile email';
 			let opInfo = await loadOpInfo(fetch, mcEndpoint, selectedOp);
 			$loginParams = {
 				mcEndpoint,
@@ -150,7 +149,7 @@
 				sshHost,
 				username: ''
 			};
-			await signIn(op.id, { scope: opInfo.scopes });
+			await signIn(op.id, null, { scope: opInfo.scopes.join(' ') });
 		} catch {
 			$uiBlock = false;
 			$errorMessage = 'Failed to login';
