@@ -4,17 +4,10 @@
 	import { errorMessage, loginParams } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import 'xterm/css/xterm.css';
-	import ResizeObserver from 'resize-observer-polyfill';
+	// HACK: disable resize observer for now, firefox doesn't work
+	// import ResizeObserver from 'resize-observer-polyfill';
 
 	let termDiv: HTMLDivElement;
-	let handleResize: () => void = () => {};
-	let RO: ResizeObserver = new ResizeObserver((entries) => {
-		for (let entry of entries) {
-			// console.log('resize');
-			// console.log({ entry });
-			handleResize();
-		}
-	});
 
 	onMount(async () => {
 		const accessToken = $page.data.session?.accessToken;
@@ -52,12 +45,16 @@
 			fitAddon.fit();
 			term.focus();
 
-			handleResize = () => {
+			let handleResize = () => {
 				if (fitAddon) {
 					fitAddon.fit();
 				}
 			};
-			RO.observe(termDiv);
+			// HACK: resize observer doesn't work in firefox, disable for now
+			// let RO: ResizeObserver = new ResizeObserver((entries) => {
+			// 	handleResize();
+			// });
+			// RO.observe(termDiv);
 
 			const ws_url = new URL(`ws://${$page.url.hostname}:${$page.url.port}/ws/connect`);
 			ws_url.searchParams.set('sshHostname', $loginParams?.sshHost.hostname);
