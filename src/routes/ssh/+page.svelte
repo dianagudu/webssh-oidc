@@ -56,7 +56,11 @@
 			// });
 			// RO.observe(termDiv);
 
-			const ws_url = new URL(`ws://${$page.url.hostname}:${$page.url.port}/ws/connect`);
+			const ws_url = new URL(
+				`${$page.url.protocol === 'https:' ? 'wss' : 'ws'}://${$page.url.hostname}:${
+					$page.url.port
+				}/ws/connect`
+			);
 			ws_url.searchParams.set('sshHostname', $loginParams?.sshHost.hostname);
 			ws_url.searchParams.set('sshPort', $loginParams?.sshHost.port);
 			ws_url.searchParams.set('username', $loginParams?.username);
@@ -88,9 +92,12 @@
 				goto('/');
 			}, 3000);
 
-			return term.onKey(({ key }) => {
-				ws.send(key);
+			return term.onData((data) => {
+				ws.send(data);
 			});
+			// return term.onKey(({ key }) => {
+			// 	ws.send(key);
+			// });
 		}
 	});
 </script>

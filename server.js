@@ -96,6 +96,7 @@ router.ws('/connect', function (ws, req) {
 // app.use('/svelte', routerSvelte)
 app.use('/ws', router);
 app.use(handler);
+app.set('trust proxy', () => true);
 
 app.listen(8444, async () => {
 	console.log('Started server on port 8444.');
