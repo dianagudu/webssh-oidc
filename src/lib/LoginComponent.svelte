@@ -150,8 +150,9 @@
 				username: ''
 			};
 			await signIn(op.id, null, { scope: opInfo.scopes.join(' ') });
-		} catch {
+		} catch (e) {
 			$uiBlock = false;
+			console.error(e);
 			$errorMessage = 'Failed to login';
 		}
 	};
@@ -212,7 +213,7 @@
 		</div>
 
 		<div>
-			<MyButton disabled={!canSubmit || $uiBlock} on:click={handleLogin}>
+			<MyButton disabled={!canSubmit || $uiBlock}>
 				<span class="absolute inset-y-0 left-0 flex items-center pl-3">
 					<!-- Heroicon name: mini/lock-closed -->
 					<svg
