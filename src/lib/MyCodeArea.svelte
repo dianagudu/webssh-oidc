@@ -1,33 +1,16 @@
 <script lang="ts">
-	import { text } from 'svelte/internal';
-
 	export let label: string;
 	export let value: string;
 	export let id: string;
 
 	let selected = false;
 
-	function setClipboard(text: string) {
-		var type = 'text/plain';
-		var blob = new Blob([text], { type });
-		var data = [new ClipboardItem({ [type]: blob })];
-
-		navigator.clipboard.write(data).then(
-			function () {
-				/* success */
-				// console.log('copied text to clipboard');
-			},
-			function () {
-				/* failure */
-			}
-		);
-	}
-	const selectAll = (e: Event) => {
-		if (e.target instanceof HTMLSpanElement) {
-			// e.target.select();
-			setClipboard(e.target.textContent ?? '');
-		}
-	};
+	// const selectAll = (e: Event) => {
+	// 	if (e.target instanceof HTMLSpanElement) {
+	// 		// e.target.select();
+	// 		setClipboard(e.target.textContent ?? '');
+	// 	}
+	// };
 
 	const copyToClipboard = (e: Event) => {
 		// console.log($page.data.session);
@@ -42,18 +25,19 @@
 			if (controlled && controlled instanceof HTMLSpanElement) {
 				let textarea = controlled as HTMLSpanElement;
 				selected = true;
-				// textarea.select();
 				if (textarea.textContent) {
-					setClipboard(textarea.textContent);
-					button.innerHTML = '✓';
-					button.disabled = true;
-					setTimeout(() => {
-						// clear selection, reset button
-						// textarea.setSelectionRange(null, null);
-						selected = false;
-						button.innerHTML = '🗎';
-						button.disabled = false;
-					}, 500);
+					function copySuccessful() {
+						button.innerHTML = '✓';
+						button.disabled = true;
+						setTimeout(() => {
+							// clear selection, reset button
+							// textarea.setSelectionRange(null, null);
+							selected = false;
+							button.innerHTML = '🗎';
+							button.disabled = false;
+						}, 300);
+					}
+					navigator.clipboard.writeText(textarea.textContent).then(copySuccessful, () => {});
 				}
 			}
 		}
