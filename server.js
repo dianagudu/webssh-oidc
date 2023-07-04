@@ -76,6 +76,10 @@ router.ws('/connect', function (ws, req) {
 							// console.log('SHELL ERROR: ' + err);
 							ws.close(CLOSE_REASON.error.code, CLOSE_REASON.error.data + ': ' + err);
 						});
+						ws.on('resize', (msg) => {
+							console.log('RESIZE: ' + msg);
+							shell.setWindow(msg.rows, msg.cols);
+						});
 						ws.on('message', (msg) => {
 							// console.log('SEND: ' + msg);
 							shell.write(msg);

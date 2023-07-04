@@ -30,13 +30,16 @@ export const handle = (async (e) => {
 			},
 			async session({ session, token }) {
 				// Send properties to the client, like an access_token from a provider.
-				session.accessToken = token.accessToken;
-				session.expiresAt = token.expiresAt;
+				const new_session = {
+					...session,
+					accessToken: token.accessToken,
+					expiresAt: token.expiresAt
+				};
 
 				// if (session.expiresAt && session.expiresAt < Date.now()) {
 				// 	session.accessToken = undefined;
 				// }
-				return session;
+				return new_session;
 			}
 		}
 	})(e);
