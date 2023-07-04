@@ -50,9 +50,13 @@
 		"express-ws": "^5.0.2",
 		"node-ssh": "^13.0.1",
 		"resize-observer-polyfill": "^1.5.1",
-		"xterm": "^5.1.0",
+		"svelte-resize-observer-action": "^0.0.3",
+		"xterm": "^5.2.1",
+		"xterm-addon-attach": "^0.8.0",
 		"xterm-addon-fit": "^0.7.0",
+		"xterm-addon-search": "^0.12.0",
 		"xterm-addon-web-links": "^0.8.0",
+		"xterm-addon-webgl": "^0.15.0",
 		"zod": "^3.20.6"
 	}
 }
