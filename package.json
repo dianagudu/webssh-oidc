@@ -1,6 +1,6 @@
 {
 	"name": "webssh-oidc",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -48,7 +48,7 @@
 		"dotenv": "^16.0.3",
 		"express": "^4.18.2",
 		"express-ws": "^5.0.2",
-		"node-ssh": "^13.0.1",
+		"node-ssh": "^13.1.0",
 		"resize-observer-polyfill": "^1.5.1",
 		"svelte-resize-observer-action": "^0.0.3",
 		"xterm": "^5.2.1",
