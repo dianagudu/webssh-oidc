@@ -79,26 +79,29 @@ jobs:
           apt-get update && \
           apt-get install -y mytoken
       - name: Get access token from mytoken
-        with:
+        id: step_get_access_token
+        env:
           MYTOKEN: ${{ secrets.HELMHOLTZ_MYTOKEN }}
         run: |
-          export ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid)
+          ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid)
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "::set-output name=access-token::$ACCESS_TOKEN"
       - name: Connect to deployment VM
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEPLOYMENT_HOST }}
           username: ${{ secrets.DEPLOYMENT_USERNAME }}
           port: ${{ secrets.DEPLOYMENT_PORT }}
-          password: $ACCESS_TOKEN
+          password: ${{steps.step_get_access_token.outputs.access-token}}
           tryKeyboard: true
           script: |
-            echo "---> Pulling new docker image..." && \
-            # docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}:${{ github.ref }} && \
-            docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }} && \
-            echo && \
-            echo "---> Rebuilding and restarting container with new image..." && \
-            cd motley_cue_docker && \
-            docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }} && \
-            echo && \
-            echo "---> Checking that the container is running..." && \
+            echo "---> Pulling new docker image..."
+            # docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}:${{ github.ref }}
+            docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}
+            echo
+            echo "---> Rebuilding and restarting container with new image..."
+            cd motley_cue_docker
+            docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }}
+            echo
+            echo "---> Checking that the container is running..."
             docker-compose ps ${{ env.IMAGE_NAME }} | grep Up
