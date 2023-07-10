@@ -1,8 +1,13 @@
 services:
   webssh-oidc:
-    build: .
-    image: webssh-oidc
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    # image: webssh-oidc
     ports:
       - "8444:8444"
     volumes:
-      - ./config:/config
+      - ./config:/app/config
+    env_file:
+      - .env
