@@ -85,17 +85,14 @@ jobs:
         env:
           MYTOKEN: ${{ secrets.HELMHOLTZ_MYTOKEN }}
         run: |
-          ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid)
-          echo "::add-mask::$ACCESS_TOKEN"
-          echo "::set-output name=access-token::$ACCESS_TOKEN"
+          echo ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid) >> "$GITHUB_ENV"
       - name: Connect to deployment VM
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEPLOYMENT_HOST }}
           username: ${{ secrets.DEPLOYMENT_USERNAME }}
           port: ${{ secrets.DEPLOYMENT_PORT }}
-          password: ${{steps.step_get_access_token.outputs.access-token}}
-          tryKeyboard: true
+          password: ${{ env.ACCESS_TOKEN }}
           script: |
             echo "---> Pulling new docker image..."
             # docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}:${{ github.ref }}
