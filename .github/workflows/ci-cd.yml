@@ -90,4 +90,4 @@ jobs:
         env:
           SSHPASS: ${{ env.ACCESS_TOKEN }}
         run: |
-          sshpass -P 'Access Token' -e -v ssh -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} "cd motley_cue_docker && ./update-webssh-oidc.sh"
+          sshpass -P 'Access Token' -e -v ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} "cd motley_cue_docker && ./update-webssh-oidc.sh"
