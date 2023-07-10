@@ -79,7 +79,7 @@ jobs:
           echo "deb [signed-by=/etc/apt/trusted.gpg.d/kitrepo-archive.gpg] https://repo.data.kit.edu//ubuntu/jammy ./" \
           | sudo tee -a /etc/apt/sources.list
           sudo apt-get update
-          sudo apt-get install -y mytoken
+          sudo apt-get install -y mytoken sshpass
       - name: Get access token from mytoken
         id: step_get_access_token
         env:
@@ -87,21 +87,15 @@ jobs:
         run: |
           echo ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid) >> "$GITHUB_ENV"
       - name: Connect to deployment VM
-        uses: garygrossgarten/github-action-ssh@release
-        with:
-          host: ${{ secrets.DEPLOYMENT_HOST }}
-          username: ${{ secrets.DEPLOYMENT_USERNAME }}
-          port: ${{ secrets.DEPLOYMENT_PORT }}
-          password: ${{ env.ACCESS_TOKEN }}
-          tryKeyboard: true
-          command: |
-            echo "---> Pulling new docker image..."
-            # docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}:${{ github.ref }}
-            docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}
-            echo
-            echo "---> Rebuilding and restarting container with new image..."
-            cd motley_cue_docker
-            docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }}
-            echo
-            echo "---> Checking that the container is running..."
-            docker-compose ps ${{ env.IMAGE_NAME }} | grep Up
+          env:
+              SSHPASS: ${{ env.ACESS_TOKEN }}
+          run: |
+              sshpass -P ${{ Access Token }} -e ssh -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USERNAME }}@${{ secrets.DEPLOYMENT_HOST }} \
+                " \
+                  echo '---> Pulling new docker image...' && \
+                  docker pull ${{ DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
+                  echo && echo '---> Rebuilding and restarting container with new image...' && \
+                  cd motley_cue_docker && docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }} && \
+                  echo && echo '---> Checking that the container is running...' && \
+                  docker-compose ps ${{ env.IMAGE_NAME }} | grep Up \
+                "
