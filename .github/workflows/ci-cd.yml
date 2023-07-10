@@ -90,7 +90,9 @@ jobs:
         env:
           SSHPASS: ${{ env.ACCESS_TOKEN }}
         run: |
-          sshpass -P 'Access Token' -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} \
+          TEMPFILE=$(mktemp)
+          echo ${{ secrets.DEPLOYMENT_HOST_KEY }} > $TEMPFILE
+          sshpass -P 'Access Token' -e ssh -o "UserKnownHostsFile $TEMPFILE" -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} \
             " \
               echo '---> Pulling new docker image...' && \
               docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
