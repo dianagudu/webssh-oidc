@@ -86,16 +86,9 @@ jobs:
           MYTOKEN: ${{ secrets.HELMHOLTZ_MYTOKEN }}
         run: |
           echo ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid) >> "$GITHUB_ENV"
-      - name: Connect to deployment VM
+      - name: Update and rebuild container on deployment server
         env:
           SSHPASS: ${{ env.ACCESS_TOKEN }}
         run: |
           sshpass -P 'Access Token' -e ssh -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} \
-            " \
-              echo '---> Pulling new docker image...' && \
-              docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
-              echo && echo '---> Rebuilding and restarting container with new image...' && \
-              cd motley_cue_docker && docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }} && \
-              echo && echo '---> Checking that the container is running...' && \
-              docker-compose ps ${{ env.IMAGE_NAME }} | grep Up \
-            "
+            "cd motley_cue_docker && ./update-webssh-oidc.sh"
