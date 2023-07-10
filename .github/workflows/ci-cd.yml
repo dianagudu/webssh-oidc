@@ -93,7 +93,7 @@ jobs:
           sshpass -P 'Access Token' -e ssh -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USERNAME }}@${{ secrets.DEPLOYMENT_HOST }} \
             " \
               echo '---> Pulling new docker image...' && \
-              docker pull ${{ DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
+              docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
               echo && echo '---> Rebuilding and restarting container with new image...' && \
               cd motley_cue_docker && docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }} && \
               echo && echo '---> Checking that the container is running...' && \
