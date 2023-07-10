@@ -93,11 +93,10 @@ jobs:
         run: |
           TEMPFILE=$(mktemp)
           echo ${{ secrets.DEPLOYMENT_HOST_KEY }} > $TEMPFILE
-          TAG=$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/v//g')
           sshpass -P 'Access Token' -e ssh -o "UserKnownHostsFile $TEMPFILE" -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USER }}@${{ secrets.DEPLOYMENT_HOST }} \
             " \
               echo '---> Pulling new docker image...' && \
-              docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:$TAG && \
+              docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
               echo && echo '---> Rebuilding and restarting container with new image...' && \
               cd motley_cue_docker && docker-compose up -d --no-deps --build ${{ env.IMAGE_NAME }} && \
               echo && echo '---> Checking that the container is running...' && \
