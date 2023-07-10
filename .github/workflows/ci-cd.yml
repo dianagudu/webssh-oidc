@@ -87,13 +87,14 @@ jobs:
         run: |
           echo ACCESS_TOKEN=$(mytoken AT --MT-env MYTOKEN --scope openid) >> "$GITHUB_ENV"
       - name: Connect to deployment VM
-        uses: appleboy/ssh-action@master
+        uses: garygrossgarten/github-action-ssh@release
         with:
           host: ${{ secrets.DEPLOYMENT_HOST }}
           username: ${{ secrets.DEPLOYMENT_USERNAME }}
           port: ${{ secrets.DEPLOYMENT_PORT }}
           password: ${{ env.ACCESS_TOKEN }}
-          script: |
+          tryKeyboard: true
+          command: |
             echo "---> Pulling new docker image..."
             # docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}:${{ github.ref }}
             docker pull ${DOCKER_USERNAME}/${{ env.IMAGE_NAME }}
