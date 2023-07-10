@@ -90,7 +90,7 @@ jobs:
         env:
           SSHPASS: ${{ env.ACESS_TOKEN }}
         run: |
-          sshpass -P 'Access Token' -e ssh -p ${{ secrets.DEPLOYMENT_PORT }} ${{ secrets.DEPLOYMENT_USERNAME }}@${{ secrets.DEPLOYMENT_HOST }} \
+          sshpass -P 'Access Token' -e ssh -p ${{secrets.DEPLOYMENT_PORT}} ${{secrets.DEPLOYMENT_USERNAME}}@${{secrets.DEPLOYMENT_HOST}} \
             " \
               echo '---> Pulling new docker image...' && \
               docker pull ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }} && \
