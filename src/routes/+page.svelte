@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { page } from '$app/stores';
 	import LoginComponent from '$lib/LoginComponent.svelte';
 	import AfterLogin from '$lib/AfterLogin.svelte';
@@ -12,6 +13,19 @@
 		{:else}
 			<AfterLogin />
 		{/if}
+	</div>
+
+	<div class="footer text-mc-blue">
+		<p>
+			<a href="/privacy"> Privacy Policy </a> |
+			<a href="https://github.com/dianagudu/webssh-oidc">
+				<Icon icon="mdi:github" class="inline" /> Source
+			</a>
+			|
+			<a href="mailto:m-contact@lists.kit.edu"
+				><Icon icon="mdi:at" class="inline" /> Developer Contact</a
+			>
+		</p>
 	</div>
 	{#if $uiBlock}
 		<!-- loading overlay -->
@@ -47,3 +61,13 @@
 		<!-- end loading overlay -->
 	{/if}
 </div>
+
+<style>
+	.footer {
+		position: absolute;
+		bottom: 0;
+		width: 100%;
+		height: 2.5rem;
+		text-align: center;
+	}
+</style>

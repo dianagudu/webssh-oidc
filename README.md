@@ -57,3 +57,19 @@ You can then spin up a container with:
 ```bash
 docker-compose up
 ```
+
+Check out the [motley_cue_docker](https://github.com/dianagudu/motley_cue_docker) repository for a complete example with motley-cue and ssh server.
+
+## Configuration
+
+OIDC clients (id + secret) can be configured in `config/default.yml`. An example can be found in `config/default.yml.example`.
+
+A privacy policy is necessary to be able to run the app. The compose file assumes one is present in `config/docs/privacy.md`. An example can be found in `config/docs/privacy.md.example`.
+
+## Contributing
+
+To increase version number, please do not tag the commit. Instead, use:
+
+```bash
+npm version [ patch | minor | major ] --no-git-tag-version
+```

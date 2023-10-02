@@ -1,0 +1,43 @@
+
+# webssh-oidc privacy policy
+
+## Description of the service
+
+The service **webssh-oidc** is a service for logging in to SSH servers from the browser using OpenID Connect (OIDC) identities.
+
+## What personal data is processed and why
+
+Users of the webssh-oidc service use it to log in to SSH servers. The service receives tokens from the OIDC provider, which are passed to the motley-cue service, which in turn uses them to authenticate, authorise, and deploy the user to the SSH server. The tokens are not stored by the webssh-oidc service.
+
+webssh-oidc requests the scopes required by motley-cue from the OIDC provider. For more information on the scopes requested by motley-cue, check the motley-cue privacy policy.
+
+Usage of the webssh-oidc service generates logs, which are retained. These records contain:
+
+- The network (IP) address from which you access webssh-oidc
+- The user agent used to connect to the webssh-oidc service
+- Time and date of access
+- Details of actions you perform
+
+This data is necessary to ensure that the webssh-oidc service is reliable and secure, and are used for assisting in the analysis of reported problems and responding to security incidents.
+
+The legal basis for processing the personal data is legitimate interest, Article 6.1(f), [GDPR](https://eur-lex.europa.eu/eli/reg/2016/679/oj).
+
+## Disclosure of personal data
+
+The collected personal data is only accessible to the authorised personnel of this service, and then only for reasons outlined above. Personal data is not regularly disclosed to third parties.
+
+## Data retention
+
+The user may ask to be removed from the service by interacting with the contact person for the service. Access logs are deleted after 12 months.
+
+## How to access, rectify and delete the personal data
+
+For the data retained and processed by webssh-oidc, you may use the service contact (provided below) to access or rectify information. To rectify the data released by an OpenID provider, contact the providers' operators.
+
+## Data protection code of conduct
+
+Personal data will be protected according to the [Code of Conduct for Service Providers](https://www.geant.org/uri/Pages/dataprotection-code-of-conduct.aspx), a common standard for the research and higher education sector to protect the user's privacy.
+
+## Contact Information
+
+Service Operator: {privacy_contact}

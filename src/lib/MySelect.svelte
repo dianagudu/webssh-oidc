@@ -71,7 +71,7 @@
 	</div>
 	{#if expand}
 		<div
-			transition:slide={{ duration: 400 }}
+			transition:slide|global={{ duration: 400 }}
 			class="absolute top-10 left-0 w-full bg-gray-100 text-mc-gray z-10 shadow-md rounded-md overflow-clip"
 			on:click|stopPropagation={handleExpand}
 			on:keydown
