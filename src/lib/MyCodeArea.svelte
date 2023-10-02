@@ -1,45 +1,28 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+
 	export let label: string;
 	export let value: string;
 	export let id: string;
 
 	let selected = false;
-
-	// const selectAll = (e: Event) => {
-	// 	if (e.target instanceof HTMLSpanElement) {
-	// 		// e.target.select();
-	// 		setClipboard(e.target.textContent ?? '');
-	// 	}
-	// };
+	let disabled = false;
+	let icon = 'mdi:content-copy';
 
 	const copyToClipboard = (e: Event) => {
-		// console.log($page.data.session);
-		// get the id of the textarea to copy
-		if (e.target && e.target instanceof HTMLButtonElement) {
-			let button = e.target as HTMLButtonElement;
-			let id = button.attributes?.getNamedItem('aria-controls')?.value ?? undefined;
-			if (id === undefined) {
-				return;
-			}
-			let controlled = document.getElementById(id);
-			if (controlled && controlled instanceof HTMLSpanElement) {
-				let textarea = controlled as HTMLSpanElement;
+		if (value) {
+			function copySuccessful() {
 				selected = true;
-				if (textarea.textContent) {
-					function copySuccessful() {
-						button.innerHTML = '✓';
-						button.disabled = true;
-						setTimeout(() => {
-							// clear selection, reset button
-							// textarea.setSelectionRange(null, null);
-							selected = false;
-							button.innerHTML = '🗎';
-							button.disabled = false;
-						}, 300);
-					}
-					navigator.clipboard.writeText(textarea.textContent).then(copySuccessful, () => {});
-				}
+				icon = 'mdi:check';
+				disabled = true;
+				setTimeout(() => {
+					// clear selection, reset button
+					selected = false;
+					icon = 'mdi:content-copy';
+					disabled = false;
+				}, 300);
 			}
+			navigator.clipboard.writeText(value).then(copySuccessful, () => {});
 		}
 	};
 </script>
@@ -50,14 +33,13 @@
 	</label>
 
 	<div class="relative">
-		<!-- <textarea {id} readonly rows={numRows} class="textarea" {value} on:click={selectAll} /> -->
 		<span {id} class="textarea" class:selected>{value}</span>
 		<button
-			aria-controls={id}
+			{disabled}
 			class="absolute top-0 right-0 -translate-y-full m-1 px-4 p-2.5 text-mc-gray rounded opacity-50 hover:opacity-100"
-			on:click={copyToClipboard}
+			on:click|stopPropagation={copyToClipboard}
 		>
-			🗎
+			<Icon {icon} class="inline" />
 		</button>
 	</div>
 </div>

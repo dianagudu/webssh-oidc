@@ -9,5 +9,6 @@ services:
       - "8444:8444"
     volumes:
       - ./config:/app/config
+      - ./config/docs/:/app/build/client/docs
     env_file:
       - .env
