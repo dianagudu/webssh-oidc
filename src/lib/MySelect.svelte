@@ -18,22 +18,10 @@
 	let expand = false;
 	const dispatch = createEventDispatcher<{ select: string }>();
 
-	function handleSelect(e: Event) {
-		value = (e.target as HTMLDivElement).innerText.trim();
-		dispatch('select', value);
-	}
-
 	function handleExpand() {
 		if (!disabled) expand = !expand;
 	}
 </script>
-
-<svelte:window
-	on:keydown={(e) => {
-		if (!expand) return;
-		if (e.key === 'Escape') expand = false;
-	}}
-/>
 
 <div
 	id={name}
@@ -48,15 +36,17 @@
 	on:outsideclick={() => (expand = false)}
 >
 	<div class="flex flex-row">
-		{#if value}
-			{value}
-		{:else}
-			{values === undefined
-				? descriptionTexts.loading
-				: !Object.values(values).length
-				? descriptionTexts.novals
-				: descriptionTexts.choose}
-		{/if}
+		{#key value}
+			{#if value}
+				<slot name="selectedValue" {value} />
+			{:else}
+				{values === undefined
+					? descriptionTexts.loading
+					: !Object.values(values).length
+					? descriptionTexts.novals
+					: descriptionTexts.choose}
+			{/if}
+		{/key}
 		<!-- <div class="absolute top-1 -right-2 h-full w-8 flex items-center justify-center"> -->
 		<div class="absolute -right-0">
 			<svg
@@ -79,10 +69,13 @@
 			{#each Object.values(values || {}) as val}
 				<div
 					class="p-2 cursor-pointer hover:bg-mc-blue-200 hover:text-white"
-					on:click={handleSelect}
 					on:keydown
+					on:click={() => {
+						value = val;
+						dispatch('select', value);
+					}}
 				>
-					{val}
+					<slot name="option" value={val} />
 				</div>
 			{/each}
 		</div>

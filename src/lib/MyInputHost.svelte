@@ -106,7 +106,14 @@
 					protocol = detail;
 					formChange(new Event('change'));
 				}}
-			/>
+			>
+				<div slot="selectedValue" let:value>
+					{value}
+				</div>
+				<div slot="option" let:value>
+					{value}
+				</div>
+			</MySelect>
 		{/if}
 		<input
 			id="hostname"
