@@ -19,9 +19,10 @@ export interface EgiDevProfile extends Record<string, any> {
 	acr: string;
 	cert_entitlement: string;
 	eduperson_assurance: string;
-	eduperson_entitlement: string;
-	eduperson_scoped_affiliation: string;
-	eduperson_unique_id: string;
+	eduperson_entitlement: string[];
+	voperson_id: string;
+	voperson_external_affiliation: string[];
+	voperson_verified_email: string;
 	email: string;
 	email_verified: string;
 	family_name: string;
@@ -30,8 +31,6 @@ export interface EgiDevProfile extends Record<string, any> {
 	orcid: string;
 	preferred_username: string;
 	ssh_public_key: string;
-	voperson_id: string;
-	voperson_verified_email: string;
 }
 
 export default function EgiDev<P extends EgiDevProfile>(
@@ -45,7 +44,7 @@ export default function EgiDev<P extends EgiDevProfile>(
 		authorization: {
 			params: {
 				scope:
-					'openid profile email eduperson_entitlement eduperson_scoped_affiliation eduperson_unique_id'
+					'openid profile email eduperson_entitlement voperson_external_affiliation voperson_id'
 			}
 		},
 		checks: ['pkce', 'state'],

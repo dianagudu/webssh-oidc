@@ -6,6 +6,7 @@
 	import MyInputHost from '$lib/MyInputHost.svelte';
 	import MySelect from '$lib/MySelect.svelte';
 	import MyButton from '$lib/MyButton.svelte';
+	import MyProviderOption from '$lib/MyProviderOption.svelte';
 	import { isValidHost, hostSchema, resetHost, type Host, type OP } from '$lib/types';
 	import { loadOpInfo, loadOps } from '$lib/motley_cue';
 	import { errorMessage, loginParams, uiBlock } from '$lib/stores';
@@ -207,7 +208,14 @@
 							selectedOp = detail;
 							hasSelectedOp = true;
 						}}
-					/>
+					>
+						<div slot="selectedValue" let:value>
+							<MyProviderOption provider_issuer={value} />
+						</div>
+						<div slot="option" let:value>
+							<MyProviderOption provider_issuer={value} />
+						</div>
+					</MySelect>
 				</div>
 			</div>
 		</div>

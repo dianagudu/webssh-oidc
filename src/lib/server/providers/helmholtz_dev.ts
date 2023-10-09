@@ -22,6 +22,8 @@ export interface HelmholtzDevProfile extends Record<string, unknown> {
 	eduperson_entitlement: string[];
 	eduperson_assurance: string[];
 	eduperson_scoped_affiliation: string[];
+	voperson_id: string;
+	voperson_external_affiliation: string[];
 }
 
 export default function HelmholtzDev<P extends HelmholtzDevProfile>(
@@ -35,7 +37,7 @@ export default function HelmholtzDev<P extends HelmholtzDevProfile>(
 		authorization: {
 			params: {
 				scope:
-					'credentials openid profile eduperson_scoped_affiliation eduperson_unique_id sn eduperson_assurance display_name email eduperson_entitlement eduperson_principal_name single-logout'
+					'credentials openid profile eduperson_scoped_affiliation eduperson_unique_id sn eduperson_assurance display_name email eduperson_entitlement eduperson_principal_name single-logout voperson_external_affiliation voperson_id'
 			}
 		},
 		checks: ['pkce', 'state'],

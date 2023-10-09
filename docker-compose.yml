@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       target: runner
     # image: webssh-oidc
+    restart: on-failure
     ports:
       - "8444:8444"
     volumes:
