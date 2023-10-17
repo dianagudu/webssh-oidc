@@ -6,7 +6,7 @@ import logo_wlcg from '$lib/assets/provider-logos/wlcg.jpeg';
 import logo_eduteams from '$lib/assets/provider-logos/eduteams.png';
 import logo_generic from '$lib/assets/provider-logos/oidc.png';
 
-type Provider = {
+export type Provider = {
 	name?: string;
 	logo: string;
 };
@@ -26,6 +26,10 @@ export const providers: Record<string, Provider> = {
 	},
 	'https://aai-dev.egi.eu/auth/realms/egi': {
 		name: 'EGI dev',
+		logo: logo_egi
+	},
+	'https://aai-demo.egi.eu/auth/realms/egi': {
+		name: 'EGI demo',
 		logo: logo_egi
 	},
 	'https://login.helmholtz.de/oauth2': {

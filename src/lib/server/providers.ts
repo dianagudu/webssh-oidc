@@ -7,6 +7,7 @@ import Helmholtz from '$lib/server/providers/helmholtz';
 import HelmholtzDev from '$lib/server/providers/helmholtz_dev';
 import Egi from '$lib/server/providers/egi';
 import EgiDev from '$lib/server/providers/egi_dev';
+import EgiDemo from '$lib/server/providers/egi_demo';
 import SimpleSaml from '$lib/server/providers/simplesaml';
 import Wlcg from '$lib/server/providers/wlcg';
 import eduTEAMS from '$lib/server/providers/eduteams';
@@ -30,6 +31,8 @@ function loadProvider(provider_config: ProviderConfig) {
 			return Google(auth);
 		case 'https://aai-dev.egi.eu/auth/realms/egi':
 			return EgiDev(auth);
+		case 'https://aai-demo.egi.eu/auth/realms/egi':
+			return EgiDemo(auth);
 		case 'https://aai.egi.eu/auth/realms/egi':
 			return Egi(auth);
 		case 'https://iam.deep-hybrid-datacloud.eu':
