@@ -1,13 +1,15 @@
-import { handler } from './build/handler.js';
+// import { handler } from './build/handler.js';
 import { NodeSSH } from 'node-ssh';
 import express from 'express';
+import session from 'express-session';
 import ews from 'express-ws';
+
+const port = 8445;
 
 const ssh = new NodeSSH();
 const app = express();
 ews(app);
 var router = express.Router();
-// var routerSvelte = express.Router()
 
 const CLOSE_REASON = {
 	normal: { code: 1000, data: 'Websocket was closed normally' },
@@ -38,7 +40,7 @@ router.ws('/connect', function (ws, req) {
 		return;
 	}
 	(async () => {
-		// console.log({ accessToken });
+		console.log('connect: ', { accessToken });
 		ssh
 			.connect({
 				host: sshHostname,
@@ -90,20 +92,18 @@ router.ws('/connect', function (ws, req) {
 					});
 			})
 			.catch((err) => {
-				console.log('Something went wrong when trying to start SSH session: ' + err);
+				console.error('Something went wrong when trying to start SSH session: ' + err);
 				ws.close(CLOSE_REASON.error.code, 'SSH connect - ' + err);
 			});
 	})();
 });
 
-// routerSvelte.use(handler)
-// app.use('/svelte', routerSvelte)
+app.set('trust proxy', 1);
 app.use('/ws', router);
-app.use(handler);
-app.set('trust proxy', () => true);
+// app.use(handler);
 
-app.listen(8444, async () => {
-	console.log('Started server on port 8444.');
+app.listen(port, async () => {
+	console.log(`Started websocket on port ${port}.`);
 });
 
 export { app };

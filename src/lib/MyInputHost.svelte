@@ -4,18 +4,28 @@
 	import { z } from 'zod';
 	import MySelect from './MySelect.svelte';
 
-	export let title: string;
-	export let host: Host;
-	export let defaultHost: Host;
 	export let disabled = false;
 	export let showProtocol = false;
-	export let customise: boolean;
+	export let title: string;
+	
+	export let defaultHost: Host;
+	export let host: Host;
+
+	let internalHost: Host = host;
+
+	function setHost(newHost: Host) {
+		if (JSON.stringify(newHost) !== JSON.stringify(host)) {
+			host = newHost;
+			dispatch('change', host);
+		}
+	}
+
+	let customise = JSON.stringify(host) !== JSON.stringify(defaultHost);
 
 	let myForm: HTMLFormElement;
 	let protocol: string | undefined = host?.protocol;
 
 	const dispatch = createEventDispatcher<{ change: Host }>();
-	const dispatchReset = createEventDispatcher();
 
 	let errorStates: { [index: string]: boolean } = {
 		hostname: false,
@@ -24,6 +34,7 @@
 	};
 
 	function formChange(e: Event) {
+		console.log("FORM CHANGE")
 		try {
 			errorStates = {
 				hostname: false,
@@ -34,8 +45,9 @@
 			if (showProtocol) fd.append('protocol', protocol ?? '');
 			const data = Object.fromEntries(fd.entries());
 			console.log({ data });
-			host = hostSchema.parse(data);
-			dispatch('change', host);
+			const newHost = hostSchema.parse(data);
+			//n more validation here
+			setHost(newHost);
 		} catch (err) {
 			console.log({ err }, err instanceof z.ZodError);
 			if (err instanceof z.ZodError) {
@@ -54,13 +66,14 @@
 	}
 
 	function handleCustomise(e: Event) {
+		console.log("HANDLE CUSTOMISE")
 		customise = (e.target as HTMLInputElement).checked;
 		if (customise) {
-			host = { ...resetHost };
-			dispatchReset('reset');
+			// internalHost = { ...resetHost };
+			// dispatchReset('reset');
 		} else {
-			host = { ...defaultHost };
-			dispatch('change', host);
+			internalHost = { ...defaultHost };
+			// dispatch('change', host);
 		}
 		errorStates = {
 			hostname: false,
@@ -90,11 +103,12 @@
 </div>
 <form on:change={formChange} bind:this={myForm}>
 	<div class="dualinput" class:triple={showProtocol}>
+		{#key internalHost}
 		{#if showProtocol}
 			<MySelect
 				name="protocol"
 				hasError={errorStates.protocol}
-				value={host.protocol}
+				value={internalHost.protocol}
 				disabled={!customise || disabled}
 				values={['http', 'https']}
 				descriptionTexts={{
@@ -120,7 +134,7 @@
 			name="hostname"
 			type="text"
 			placeholder="hostname"
-			value={host.hostname}
+			value={internalHost.hostname}
 			disabled={!customise || disabled}
 			required
 			class:error_state={errorStates.hostname}
@@ -132,11 +146,13 @@
 			name="port"
 			type="number"
 			placeholder="port"
-			value={host.port > 0 ? host.port : null}
+			value={internalHost.port > 0 ? internalHost.port : ''}
 			disabled={!customise || disabled}
 			required
 			class:error_state={errorStates.port}
 		/>
+		<!-- {internalHost.port} -->
+		{/key}
 	</div>
 </form>
 

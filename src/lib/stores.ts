@@ -1,6 +1,5 @@
 import { browser } from '$app/environment';
 import { writable, type Writable } from 'svelte/store';
-import type { LoginParams } from './types';
 
 function fromLocalStorage<T>(key: string, initialValue: T): () => T {
 	if (browser) {
@@ -23,8 +22,4 @@ function toLocalStorage<T>(store: Writable<T>, key: string): void {
 }
 
 export const uiBlock = writable<boolean>(true);
-
-export const loginParams = writable<LoginParams | null>(fromLocalStorage('loginParams', null)());
-toLocalStorage(loginParams, 'loginParams');
-
 export const errorMessage = writable<string>();

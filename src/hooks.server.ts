@@ -1,66 +1,60 @@
-import type { Handle } from '@sveltejs/kit';
-import { SvelteKitAuth } from '@auth/sveltekit';
+import { redirect, type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 
-import providers from '$lib/server/providers';
+import { handle as skauth } from '$lib/auth';
+import { terminalSessionStore } from '$lib/server/terminalsessions';
 
-export const handle = (async (e) => {
-	return SvelteKitAuth({
-		// secret: generate one??,
-		trustHost: true,
-		providers: providers,
-		callbacks: {
-			async jwt({ token, account }) {
-				// Persist the OIDC access_token to the token right after signin
-				if (account) {
-					token.accessToken = account.access_token;
-					if (account.expires_in) {
-						token.expiresAt = Date.now() + account.expires_in;
-					}
-				}
-				// if (user) {
-				// 	const min_user = {
-				// 		name: user.name,
-				// 		email: user.email,
-				// 		preferred_username: user.preferred_username,
-				// 		eduperson_entitlement: user.eduperson_entitlement
-				// 	};
-				// 	token.user = min_user;
-				// }
-				return token;
-			},
-			async session({ session, token }) {
-				// Send properties to the client, like an access_token from a provider.
-				const new_session = {
-					...session,
-					accessToken: token.accessToken,
-					expiresAt: token.expiresAt
-				};
+// hook to set cookies for login params, i.e. motley-cue endpoint, ssh hostname and port
+const loginParams = (async ({ event, resolve }) => {
+	// if the url contains the values in the search params, use them and set the cookies
+	const mcEndpoint = event.url.searchParams.get('mcEndpoint');
+	if (mcEndpoint) event.cookies.set('loginParams.mcEndpoint', mcEndpoint, { path: '/' });
 
-				// if (session.expiresAt && session.expiresAt < Date.now()) {
-				// 	session.accessToken = undefined;
-				// }
-				return new_session;
-			}
-		}
-	})(e);
+	const sshHostname = event.url.searchParams.get('sshHostname');
+	if (sshHostname) event.cookies.set('loginParams.sshHostname', sshHostname, { path: '/' });
+
+	const sshPort = event.url.searchParams.get('sshPort');
+	if (sshPort) event.cookies.set('loginParams.sshPort', sshPort, { path: '/' });
+
+	return await resolve(event);
 }) satisfies Handle;
 
-declare module '@auth/core/types' {
-	interface Session {
-		user?: {
-			id: string;
-			name?: string | null;
-			email?: string | null;
-			preferred_username?: string | null;
-		};
-		expiresAt?: number;
-		accessToken?: string;
-	}
-}
+// hook for checking whether the user is logged in and redirecting to the appropriate endpoint
+const authcheck = (async ({ event, resolve }) => {
+	// get session and set event local session
+	const session = await event.locals?.auth();
+	event.locals.session = session;
+	console.log('session in authcheck: ', session);
 
-declare module '@auth/core/jwt' {
-	interface JWT {
-		accessToken?: string;
-		expiresAt?: number;
+	// get login params from cookies and set the event locals
+	const mcEndpoint = event.cookies.get('loginParams.mcEndpoint');
+	const sshHostname = event.cookies.get('loginParams.sshHostname');
+	const sshPort = event.cookies.get('loginParams.sshPort');
+
+	if (mcEndpoint && sshHostname && sshPort)
+		event.locals.loginParams = {
+			mcEndpoint: decodeURIComponent(mcEndpoint),
+			sshHost: { hostname: decodeURIComponent(sshHostname), port: Number(sshPort) }
+		};
+
+	if (event.route.id?.startsWith('/(public)/login') && session?.user) {
+		console.debug('User already logged in. Redirecting to terminal...');
+		return redirect(302, '/terminal');
 	}
-}
+
+	if (event.route.id?.startsWith('/(protected)')) {
+		if (!session?.user || !event.locals.loginParams) {
+			console.log('SOMETHING WENT WRONG!!!! ', event?.locals);
+			return redirect(302, '/login');
+		}
+		const userSessions = terminalSessionStore.getAllSessionsForUser(session.user.id);
+		if (userSessions.length === 0) {
+			userSessions.push(terminalSessionStore.createSession(session.user.id, 'default'));
+		}
+		event.locals.terminalSessions = userSessions;
+	}
+
+	return await resolve(event);
+}) satisfies Handle;
+
+export const handle = sequence(skauth, loginParams, authcheck);

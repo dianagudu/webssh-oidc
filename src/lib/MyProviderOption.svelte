@@ -22,6 +22,9 @@
 	});
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-missing-attribute -->
 <div class="grid grid-flow-col justify-start align-middle h-5 mb-1" on:click={selectProvider}>
 	<img class="m-2 h-3 w-auto" src={provider.logo} />
 	<div class="mx-2 align-middle text-base">{provider.name}</div>

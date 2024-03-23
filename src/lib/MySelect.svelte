@@ -23,6 +23,7 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	id={name}
 	class="relative w-full select-none text-sm text-mc-gray px-3 py-2 border border-solid focus:outline-none focus:ring-mc-blue-400 focus:border-mc-blue-400 data-[error]:border-red-500 first:rounded-l-md last:rounded-r-md rounded-none"
@@ -60,6 +61,7 @@
 		</div>
 	</div>
 	{#if expand}
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div
 			transition:slide|global={{ duration: 400 }}
 			class="absolute top-10 left-0 w-full bg-gray-100 text-mc-gray z-10 shadow-md rounded-md overflow-clip"
@@ -67,6 +69,7 @@
 			on:keydown
 		>
 			{#each Object.values(values || {}) as val}
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
 					class="p-2 cursor-pointer hover:bg-mc-blue-200 hover:text-white"
 					on:keydown

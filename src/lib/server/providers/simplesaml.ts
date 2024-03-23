@@ -26,6 +26,7 @@ export default function SimpleSaml<P extends SimpleSamlProfile>(
 		issuer: 'https://et3.gndev.hexaa.eu',
 		wellKnown: 'https://et3.gndev.hexaa.eu/.well-known/openid-configuration',
 		authorization: { params: { scope: 'openid profile email' } },
+		checks: ['pkce', 'state'],
 		...options
 	};
 }

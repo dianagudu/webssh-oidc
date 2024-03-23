@@ -1,9 +1,3 @@
-// import {
-// 	PUBLIC_MC_ENDPOINT_URL,
-// 	PUBLIC_SSH_HOSTNAME_FQDN,
-// 	PUBLIC_SSH_PORT
-// } from '$env/static/public';
-
 import { env } from '$env/dynamic/public';
 
 const CONFIG = {

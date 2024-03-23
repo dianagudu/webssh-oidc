@@ -2,16 +2,20 @@
 	import { onMount } from 'svelte';
 	import { signIn } from '@auth/sveltekit/client';
 
-	import MyBanner from './MyBanner.svelte';
+	import logo from '$lib/assets/webssh-oidc-square.png';
+	import MyAlert from '$lib/MyAlert.svelte';
 	import MyInputHost from '$lib/MyInputHost.svelte';
 	import MySelect from '$lib/MySelect.svelte';
 	import MyButton from '$lib/MyButton.svelte';
 	import MyProviderOption from '$lib/MyProviderOption.svelte';
 	import { isValidHost, hostSchema, resetHost, type Host, type OP } from '$lib/types';
 	import { loadOpInfo, loadOps } from '$lib/motley_cue';
-	import { errorMessage, loginParams, uiBlock } from '$lib/stores';
-	import CONFIG from './config';
-	import { page } from '$app/stores';
+	import { errorMessage, uiBlock } from '$lib/stores';
+	import CONFIG from '$lib/config';
+	import { slide } from 'svelte/transition';
+
+	export let providers: Record<string, OP>;
+	let advanced: boolean = false;
 
 	// default settings
 	let defaultSsh = { ...resetHost };
@@ -65,7 +69,7 @@
 			defaultOps = await loadOps(fetch, mcEndpoint);
 			supportedOps = [...defaultOps];
 			filteredOps = supportedOps.filter((value: string) =>
-				Object.keys($page.data.providers).includes(value)
+				Object.keys(providers).includes(value)
 			);
 		} catch (e) {
 			defaultMc = { ...resetHost };
@@ -106,7 +110,7 @@
 		if (JSON.stringify(mcHost) === JSON.stringify(defaultMc)) {
 			supportedOps = defaultOps;
 			filteredOps = supportedOps.filter((value: string) =>
-				Object.keys($page.data.providers).includes(value)
+				Object.keys(providers).includes(value)
 			);
 			validMc = true;
 			return;
@@ -116,8 +120,11 @@
 		try {
 			$uiBlock = true;
 			supportedOps = await loadOps(fetch, mcEndpoint);
+			if (!supportedOps || !supportedOps.length) {
+				throw new Error('No supported OPs');
+			}
 			filteredOps = supportedOps.filter((value: string) =>
-				Object.keys($page.data.providers).includes(value)
+				Object.keys(providers).includes(value)
 			);
 			validMc = true;
 		} catch (e) {
@@ -138,19 +145,25 @@
 
 	$: canSubmit = validSsh && validMc && hasSelectedOp;
 
+	function isKeyOf<T>(key: string | number | symbol, obj: T): key is keyof T {
+		return obj && typeof obj == 'object' && key in obj;
+	}
+
 	const handleLogin = async () => {
 		try {
 			$uiBlock = true;
-			let op = $page.data.providers[selectedOp];
+
+			if (!selectedOp || !isKeyOf(selectedOp, providers)) {
+				throw new Error('Invalid OIDC provider');
+			}
+
+			let op = providers[selectedOp];
 			let opInfo = await loadOpInfo(fetch, mcEndpoint, selectedOp);
-			$loginParams = {
-				mcEndpoint,
-				op,
-				opInfo,
-				sshHost,
-				username: ''
-			};
-			await signIn(op.id, null, { scope: opInfo.scopes.join(' ') });
+			let callbackUrl = '/terminal'
+				+ '?mcEndpoint=' + encodeURIComponent(mcEndpoint.toString())
+				+ '&sshHostname=' + encodeURIComponent(sshHost.hostname)
+				+ '&sshPort=' + sshHost.port.toString();
+			await signIn(op.id, { callbackUrl: callbackUrl }, { scope: opInfo.scopes.join(' ') });
 		} catch (e) {
 			$uiBlock = false;
 			console.error(e);
@@ -160,47 +173,28 @@
 </script>
 
 <div class="bg-white rounded-lg shadow sm:max-w-[70%] mx-auto p-10">
-	<MyBanner />
+	<div>
+		<img class="mx-auto h-12 w-auto" src={logo} alt="webssh-oidc logo" />
+		<h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-mc-gray">SSH with OIDC</h2>
+	</div>
+	{#if $errorMessage}
+		<MyAlert />
+	{/if}
 	<form class="mt-8 space-y-6" action="#" method="POST" on:submit|preventDefault={handleLogin}>
 		<input type="hidden" name="remember" value="true" />
 		<div class="-space-y-px rounded-md">
-			<MyInputHost
-				title="motley_cue"
-				host={mcHost}
-				defaultHost={defaultMc}
-				showProtocol={true}
-				customise={JSON.stringify(defaultMc) === JSON.stringify(resetHost)}
-				on:change={debouncedReloadOPs}
-				on:reset={debouncedResetOPs}
-				disabled={$uiBlock}
-			/>
-			<MyInputHost
-				title="SSH"
-				host={sshHost}
-				defaultHost={defaultSsh}
-				customise={JSON.stringify(defaultSsh) === JSON.stringify(resetHost)}
-				disabled={$uiBlock}
-				on:change={({ detail }) => {
-					sshHost = { ...detail };
-					validSsh = true;
-				}}
-				on:reset={() => {
-					sshHost = { ...resetHost };
-					validSsh = false;
-				}}
-			/>
 			<div>
-				<label for="op" class="block font-medium text-mc-gray pt-4 pb-2 pl-1"
+				<!-- <label for="op" class="block font-medium text-mc-gray pt-4 pb-2 pl-1"
 					>OIDC identity provider</label
-				>
-				<div class="text-sm">
+				> -->
+				<div class="text-sm pt-4 pb-2">
 					<MySelect
 						name="op"
 						values={filteredOps}
 						descriptionTexts={{
 							loading: 'Loading...',
 							novals: 'No supported OPs',
-							choose: 'Choose from supported OPs'
+							choose: 'Select identity provider'
 						}}
 						value={selectedOp}
 						disabled={$uiBlock || !filteredOps || !filteredOps.length}
@@ -210,7 +204,7 @@
 						}}
 					>
 						<div slot="selectedValue" let:value>
-							<MyProviderOption provider_issuer={value} />
+							<MyProviderOption provider_issuer={value || ""} />
 						</div>
 						<div slot="option" let:value>
 							<MyProviderOption provider_issuer={value} />
@@ -218,6 +212,40 @@
 					</MySelect>
 				</div>
 			</div>
+			<div class="flex items-center pt-2 pb-1 px-1">
+				<input
+					id="advanced-settings" type="checkbox"
+					checked={advanced} 
+					on:change={() => advanced = !advanced}
+					class="w-4 h-4 bg-mc-gray-100 rounded-md"
+					/>
+				<label
+					for="advanced-settings"
+					class="ms-2 text-sm font-medium text-mc-gray dark:text-mc-gray-200"
+				>Show advanced settings</label>
+			</div>
+			{#if advanced}
+			<div in:slide|global={{ duration: 300 }} out:slide|global={{ duration: 300 }}>
+				<MyInputHost
+					title="motley_cue"
+					host={mcHost}
+					defaultHost={defaultMc}
+					showProtocol={true}
+					on:change={debouncedReloadOPs}
+					disabled={$uiBlock}
+				/>
+				<MyInputHost
+					title="SSH"
+					host={sshHost}
+					defaultHost={defaultSsh}
+					disabled={$uiBlock}
+					on:change={({ detail }) => {
+						sshHost = { ...detail };
+						validSsh = true;
+					}}
+				/>
+			</div>
+			{/if}
 		</div>
 
 		<div>

@@ -1,4 +1,4 @@
-FROM node:16-buster-slim as builder
+FROM node:18-buster-slim as builder
 
 WORKDIR /app
 
@@ -6,8 +6,9 @@ COPY . /app
 RUN npm install
 RUN npm run build
 
-FROM node:16-buster-slim as runner
+FROM node:18-buster-slim as runner
 
+ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 COPY package.json /app/package.json
@@ -16,7 +17,8 @@ RUN npm ci --only=production
 
 COPY --from=builder /app/build /app/build
 COPY server.js /app/server.js
+COPY runner.sh /app/runner.sh
 
 EXPOSE 8444
 
-CMD ["node", "-r", "dotenv/config", "./server.js"]
+CMD ["/app/runner.sh"]
