@@ -17,8 +17,7 @@ RUN npm ci --only=production
 
 COPY --from=builder /app/build /app/build
 COPY server.js /app/server.js
-COPY runner.sh /app/runner.sh
 
 EXPOSE 8444
 
-CMD ["/app/runner.sh"]
+CMD ["node", "-r", "dotenv/config", "./server.js"]
