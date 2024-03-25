@@ -60,6 +60,8 @@ docker-compose up
 
 Check out the [motley_cue_docker](https://github.com/dianagudu/motley_cue_docker) repository for a complete example with motley-cue and ssh server.
 
+If you're not using TLS (not recommended, only do this when you're running the code locally), set `NODE_ENV=development` in the `.env` file.
+
 ## Configuration
 
 OIDC clients (id + secret) can be configured in `config/default.yml`. An example can be found in `config/default.yml.example`.

@@ -4,18 +4,32 @@
 	import { z } from 'zod';
 	import MySelect from './MySelect.svelte';
 
-	export let title: string;
-	export let host: Host;
-	export let defaultHost: Host;
 	export let disabled = false;
 	export let showProtocol = false;
-	export let customise: boolean;
+	export let title: string;
 
-	let myForm: HTMLFormElement;
-	let protocol: string | undefined = host?.protocol;
+	export let host: Host;
+	export let defaultHost: Host;
 
+	let internalHost: Host = host;
+
+	function unsetErrorStates() {
+		errorStates = {
+			hostname: false,
+			port: false,
+			protocol: false
+		};
+	}
+
+	function setHost(newHost: Host) {
+		if (JSON.stringify(newHost) !== JSON.stringify(host)) {
+			host = newHost;
+			dispatch('change', host);
+		}
+	}
+
+	let customise = JSON.stringify(defaultHost) !== JSON.stringify(internalHost);
 	const dispatch = createEventDispatcher<{ change: Host }>();
-	const dispatchReset = createEventDispatcher();
 
 	let errorStates: { [index: string]: boolean } = {
 		hostname: false,
@@ -23,19 +37,10 @@
 		protocol: false
 	};
 
-	function formChange(e: Event) {
+	function validateInput() {
 		try {
-			errorStates = {
-				hostname: false,
-				port: false,
-				protocol: false
-			};
-			const fd = new FormData(myForm);
-			if (showProtocol) fd.append('protocol', protocol ?? '');
-			const data = Object.fromEntries(fd.entries());
-			console.log({ data });
-			host = hostSchema.parse(data);
-			dispatch('change', host);
+			const newHost = hostSchema.parse(internalHost);
+			setHost(newHost);
 		} catch (err) {
 			console.log({ err }, err instanceof z.ZodError);
 			if (err instanceof z.ZodError) {
@@ -54,19 +59,39 @@
 	}
 
 	function handleCustomise(e: Event) {
+		console.log('HANDLE CUSTOMISE');
 		customise = (e.target as HTMLInputElement).checked;
-		if (customise) {
-			host = { ...resetHost };
-			dispatchReset('reset');
-		} else {
-			host = { ...defaultHost };
-			dispatch('change', host);
+		if (!customise) {
+			internalHost = { ...defaultHost };
+			validateInput();
 		}
-		errorStates = {
-			hostname: false,
-			port: false,
-			protocol: false
-		};
+	}
+
+	function onProtocolChange(e: CustomEvent<string>) {
+		function isProtocol(p: string | undefined): p is typeof internalHost.protocol {
+			if (p === undefined) return true;
+			return ['http', 'https'].includes(p);
+		}
+
+		if (!isProtocol(e.detail)) {
+			console.error('Invalid protocol:', e.detail);
+			return;
+		}
+
+		internalHost = { ...internalHost, protocol: e.detail };
+		validateInput();
+	}
+
+	function onHostChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		internalHost = { ...internalHost, hostname: target.value };
+		validateInput();
+	}
+
+	function onPortChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		internalHost = { ...internalHost, port: parseInt(target.value) };
+		validateInput();
 	}
 </script>
 
@@ -80,7 +105,7 @@
 			<input
 				type="checkbox"
 				checked={customise}
-				disabled={!isValidHost(defaultHost) || disabled}
+				{disabled}
 				on:change={handleCustomise}
 				class="sr-only peer"
 			/>
@@ -88,57 +113,54 @@
 		</label>
 	</div>
 </div>
-<form on:change={formChange} bind:this={myForm}>
-	<div class="dualinput" class:triple={showProtocol}>
-		{#if showProtocol}
-			<MySelect
-				name="protocol"
-				hasError={errorStates.protocol}
-				value={host.protocol}
-				disabled={!customise || disabled}
-				values={['http', 'https']}
-				descriptionTexts={{
-					loading: '...',
-					novals: '',
-					choose: '--'
-				}}
-				on:select={({ detail }) => {
-					protocol = detail;
-					formChange(new Event('change'));
-				}}
-			>
-				<div slot="selectedValue" let:value>
-					{value}
-				</div>
-				<div slot="option" let:value>
-					{value}
-				</div>
-			</MySelect>
-		{/if}
-		<input
-			id="hostname"
-			name="hostname"
-			type="text"
-			placeholder="hostname"
-			value={host.hostname}
+<div class="dualinput" class:triple={showProtocol}>
+	{#if showProtocol}
+		<MySelect
+			name="protocol"
+			hasError={errorStates.protocol}
+			value={internalHost.protocol}
 			disabled={!customise || disabled}
-			required
-			class:error_state={errorStates.hostname}
-			class:middle-child={showProtocol}
-			class="min-w-0"
-		/>
-		<input
-			id="port"
-			name="port"
-			type="number"
-			placeholder="port"
-			value={host.port > 0 ? host.port : null}
-			disabled={!customise || disabled}
-			required
-			class:error_state={errorStates.port}
-		/>
-	</div>
-</form>
+			values={['http', 'https']}
+			descriptionTexts={{
+				loading: '...',
+				novals: '',
+				choose: '--'
+			}}
+			on:select={onProtocolChange}
+		>
+			<div slot="selectedValue" let:value>
+				{value}
+			</div>
+			<div slot="option" let:value>
+				{value}
+			</div>
+		</MySelect>
+	{/if}
+	<input
+		id="hostname"
+		name="hostname"
+		type="text"
+		placeholder="hostname"
+		value={internalHost.hostname}
+		disabled={!customise || disabled}
+		required
+		class:error_state={errorStates.hostname}
+		class:middle-child={showProtocol}
+		class="min-w-0"
+		on:change={onHostChange}
+	/>
+	<input
+		id="port"
+		name="port"
+		type="number"
+		placeholder="port"
+		value={internalHost.port > 0 ? internalHost.port : ''}
+		disabled={!customise || disabled}
+		required
+		class:error_state={errorStates.port}
+		on:change={onPortChange}
+	/>
+</div>
 
 <style lang="postcss">
 	.dualinput {

@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import { slide } from 'svelte/transition';
-	import { clickOutside } from './clickoutside';
+	import { clickOutside } from '$lib/clickoutside';
 
 	export let hasError: boolean = false;
 	export let name: string;
@@ -23,9 +23,10 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	id={name}
-	class="relative w-full select-none text-sm text-mc-gray px-3 py-2 border border-solid focus:outline-none focus:ring-mc-blue-400 focus:border-mc-blue-400 data-[error]:border-red-500 first:rounded-l-md last:rounded-r-md rounded-none"
+	class="relative w-full select-none text-base text-mc-gray px-3 py-2 border border-solid focus:outline-none focus:ring-mc-blue-400 focus:border-mc-blue-400 data-[error]:border-red-500 first:rounded-l-md last:rounded-r-md rounded-none"
 	class:disabled
 	class:expanded={!disabled && expand}
 	class:selected={!expand && value}
@@ -43,12 +44,12 @@
 				{values === undefined
 					? descriptionTexts.loading
 					: !Object.values(values).length
-					? descriptionTexts.novals
-					: descriptionTexts.choose}
+						? descriptionTexts.novals
+						: descriptionTexts.choose}
 			{/if}
 		{/key}
 		<!-- <div class="absolute top-1 -right-2 h-full w-8 flex items-center justify-center"> -->
-		<div class="absolute -right-0">
+		<div class="absolute -right-0 top-3">
 			<svg
 				class="w-6 h-6 fill-current text-mc-gray"
 				xmlns="http://www.w3.org/2000/svg"
@@ -60,6 +61,7 @@
 		</div>
 	</div>
 	{#if expand}
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div
 			transition:slide|global={{ duration: 400 }}
 			class="absolute top-10 left-0 w-full bg-gray-100 text-mc-gray z-10 shadow-md rounded-md overflow-clip"
@@ -67,6 +69,7 @@
 			on:keydown
 		>
 			{#each Object.values(values || {}) as val}
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
 					class="p-2 cursor-pointer hover:bg-mc-blue-200 hover:text-white"
 					on:keydown

@@ -1,66 +1,47 @@
-import type { Handle } from '@sveltejs/kit';
-import { SvelteKitAuth } from '@auth/sveltekit';
+import { redirect, type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 
-import providers from '$lib/server/providers';
+import { handle as skauth } from '$lib/server/auth';
 
-export const handle = (async (e) => {
-	return SvelteKitAuth({
-		// secret: generate one??,
-		trustHost: true,
-		providers: providers,
-		callbacks: {
-			async jwt({ token, account }) {
-				// Persist the OIDC access_token to the token right after signin
-				if (account) {
-					token.accessToken = account.access_token;
-					if (account.expires_in) {
-						token.expiresAt = Date.now() + account.expires_in;
-					}
-				}
-				// if (user) {
-				// 	const min_user = {
-				// 		name: user.name,
-				// 		email: user.email,
-				// 		preferred_username: user.preferred_username,
-				// 		eduperson_entitlement: user.eduperson_entitlement
-				// 	};
-				// 	token.user = min_user;
-				// }
-				return token;
-			},
-			async session({ session, token }) {
-				// Send properties to the client, like an access_token from a provider.
-				const new_session = {
-					...session,
-					accessToken: token.accessToken,
-					expiresAt: token.expiresAt
-				};
+import { getUserSession } from '$lib/server/sessions';
+import type { RequestEvent } from '@sveltejs/kit';
 
-				// if (session.expiresAt && session.expiresAt < Date.now()) {
-				// 	session.accessToken = undefined;
-				// }
-				return new_session;
-			}
+function isLoggedIn({ locals: { session } }: RequestEvent) {
+	if (session && session.accessToken) {
+		const userSession = getUserSession(session.accessToken);
+		if (userSession) return true;
+	}
+	return false;
+}
+
+// hook for checking whether the user is logged in and redirecting to the appropriate endpoint
+const authcheck = (async ({ event, resolve }) => {
+	// get session and set event local session
+	const session = await event.locals?.auth();
+	event.locals.session = session;
+
+	if (event.route.id === '/(public)') {
+		if (isLoggedIn(event)) {
+			return redirect(302, '/terminal');
+		} else {
+			return redirect(302, '/login');
 		}
-	})(e);
+	}
+
+	if (event.route.id?.startsWith('/(public)/login') && isLoggedIn(event)) {
+		console.debug('User already logged in. Redirecting to terminal...');
+		return redirect(302, '/terminal');
+	}
+
+	if (event.route.id?.startsWith('/(protected)')) {
+		if (!isLoggedIn(event) || !session) return redirect(302, '/login');
+		const userSession = getUserSession(session.accessToken);
+		if (!userSession) return redirect(302, '/login'); // should never happen....
+
+		event.locals.userSession = userSession;
+	}
+
+	return await resolve(event);
 }) satisfies Handle;
 
-declare module '@auth/core/types' {
-	interface Session {
-		user?: {
-			id: string;
-			name?: string | null;
-			email?: string | null;
-			preferred_username?: string | null;
-		};
-		expiresAt?: number;
-		accessToken?: string;
-	}
-}
-
-declare module '@auth/core/jwt' {
-	interface JWT {
-		accessToken?: string;
-		expiresAt?: number;
-	}
-}
+export const handle = sequence(skauth, authcheck);

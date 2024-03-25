@@ -30,11 +30,3 @@ export type OP = {
 	id: string;
 	issuer: string;
 };
-
-export type LoginParams = {
-	mcEndpoint: URL;
-	op: OP;
-	opInfo: OPInfo;
-	sshHost: Host;
-	username: string;
-};

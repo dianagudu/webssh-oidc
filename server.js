@@ -1,13 +1,15 @@
+// @ts-check
+
 import { handler } from './build/handler.js';
 import { NodeSSH } from 'node-ssh';
 import express from 'express';
 import ews from 'express-ws';
 
-const ssh = new NodeSSH();
+const port = 8444;
+
 const app = express();
 ews(app);
 var router = express.Router();
-// var routerSvelte = express.Router()
 
 const CLOSE_REASON = {
 	normal: { code: 1000, data: 'Websocket was closed normally' },
@@ -16,11 +18,12 @@ const CLOSE_REASON = {
 	timeout: { code: 4002, data: 'Session timed out' }
 };
 
-router.ws('/connect', function (ws, req) {
+router.ws('/connect', async function (ws, req) {
 	const accessToken = req.headers['sec-websocket-protocol'];
 	const sshHostname = req.query.sshHostname?.toString();
 	const sshPort = Number(req.query.sshPort?.toString());
 	const username = req.query.username?.toString();
+
 	if (!accessToken) {
 		ws.close(CLOSE_REASON.error.code, "Missing 'sec-websocket-protocol' header");
 		return;
@@ -37,73 +40,86 @@ router.ws('/connect', function (ws, req) {
 		ws.close(CLOSE_REASON.error.code, "Missing 'username' query parameter");
 		return;
 	}
-	(async () => {
-		// console.log({ accessToken });
-		ssh
-			.connect({
-				host: sshHostname,
-				port: sshPort,
-				username: username,
-				tryKeyboard: true,
-				onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish) => {
-					// console.log(
-					// 	'onKeyboardInteractive',
-					// 	{ name },
-					// 	{ instructions },
-					// 	{ instructionsLang },
-					// 	{ prompts }
-					// );
-					if (prompts.length > 0 && prompts[0].prompt.includes('Access Token')) {
-						finish([accessToken]);
-					}
+
+	const ssh = new NodeSSH();
+	const sshConnection = await ssh
+		.connect({
+			host: sshHostname,
+			port: sshPort,
+			username: username,
+			tryKeyboard: true,
+			onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish) => {
+				if (prompts.length > 0 && prompts[0].prompt.includes('Access Token')) {
+					finish([accessToken]);
 				}
-			})
-			.then(async () => {
-				ssh
-					.requestShell({
-						term: 'xterm-256color'
-					})
-					.then((shell) => {
-						shell.addListener('data', (chunk) => {
-							// console.log('LISTENER: ' + chunk.toString('utf8'));
-							ws.send(chunk.toString('utf8'));
-						});
-						shell.addListener('close', () => {
-							// console.log('SHELL CLOSED');
-							ws.close(CLOSE_REASON.normal.code, CLOSE_REASON.normal.data);
-						});
-						shell.addListener('error', (err) => {
-							// console.log('SHELL ERROR: ' + err);
-							ws.close(CLOSE_REASON.error.code, CLOSE_REASON.error.data + ': ' + err);
-						});
-						ws.on('resize', (msg) => {
-							console.log('RESIZE: ' + msg);
-							shell.setWindow(msg.rows, msg.cols);
-						});
-						ws.on('message', (msg) => {
-							// console.log('SEND: ' + msg);
-							shell.write(msg);
-						});
-						ws.on('close', () => {
-							ssh.dispose();
-						});
-					});
-			})
-			.catch((err) => {
-				console.log('Something went wrong when trying to start SSH session: ' + err);
-				ws.close(CLOSE_REASON.error.code, 'SSH connect - ' + err);
-			});
-	})();
+			}
+		})
+		.catch((err) => {
+			console.error(CLOSE_REASON.error.code, 'Failed to connect to SSH server');
+			ws.close(CLOSE_REASON.error.code, 'Failed to connect to SSH server');
+			return null;
+		});
+
+	if (!sshConnection) return;
+
+	// console.log('connected.', sshConnection.isConnected());
+
+	const channel = await sshConnection
+		.requestShell({
+			term: 'xterm-256color'
+		})
+		.catch((err) => {
+			console.log(err);
+			ws.close(CLOSE_REASON.error.code, 'Failed to open shell');
+			return null;
+		});
+
+	// console.log('shell opened:', channel === null ? 'no' : 'yes');
+	if (!channel) return;
+
+	channel.addListener('data', (data) => {
+		ws.send(data.toString('utf8'));
+	});
+
+	channel.addListener('close', () => {
+		ws.close(CLOSE_REASON.normal.code, CLOSE_REASON.normal.data);
+	});
+
+	channel.addListener('error', (err) => {
+		// console.log('Dead.');
+		ws.close(CLOSE_REASON.error.code, CLOSE_REASON.error.data + ': ' + err);
+	});
+
+	ws.on('resize', (msg) => {
+		// console.log('RESIZE: ', { msg });
+		channel.setWindow(msg.rows, msg.cols, msg.height, msg.width);
+	});
+
+	ws.on('message', (msg) => {
+		if (channel.writable) {
+			channel.write(msg);
+		} else {
+			console.warn('Channel not writable. Message dismissed: ', msg);
+		}
+	});
+
+	ws.on('close', () => {
+		// console.log('out.');
+		try {
+			channel.close();
+			sshConnection.dispose();
+		} catch (_) {
+			console.warn('some oopsie happened.');
+		}
+	});
 });
 
-// routerSvelte.use(handler)
-// app.use('/svelte', routerSvelte)
+app.set('trust proxy', 1);
 app.use('/ws', router);
 app.use(handler);
-app.set('trust proxy', () => true);
 
-app.listen(8444, async () => {
-	console.log('Started server on port 8444.');
+app.listen(port, async () => {
+	console.log(`Started server on port ${port}.`);
 });
 
 export { app };

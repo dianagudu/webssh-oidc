@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import providers from '$lib/server/providers';
 import type { OP } from '$lib/types';
 
-export const load: PageServerLoad = async () => {
+export const load = (async () => {
 	const providerMap: { [issuer: string]: OP } = providers.reduce(
 		(map: { [issuer: string]: OP }, provider) => {
 			if (provider.issuer) {
@@ -19,4 +19,4 @@ export const load: PageServerLoad = async () => {
 	return {
 		providers: providerMap
 	};
-};
+}) satisfies PageServerLoad;
