@@ -20,8 +20,6 @@ const authcheck = (async ({ event, resolve }) => {
 	const session = await event.locals?.auth();
 	event.locals.session = session;
 
-	console.log('route id:', event.route.id);
-
 	if (event.route.id === '/(public)') {
 		if (isLoggedIn(event)) {
 			return redirect(302, '/terminal');

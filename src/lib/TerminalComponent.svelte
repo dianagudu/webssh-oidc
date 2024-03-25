@@ -43,7 +43,6 @@
 		}
 
 		const libterm = await import('$lib/terminal');
-
 		const wsConnectUrl = new URL(loginParams.wsUrl + '/connect');
 		wsConnectUrl.searchParams.set('sshHostname', loginParams.sshHost.hostname);
 		wsConnectUrl.searchParams.set('sshPort', loginParams.sshHost.port.toString());
