@@ -2,11 +2,11 @@ import { SvelteKitAuth } from '@auth/sveltekit';
 import type { Action, Handle } from '@sveltejs/kit';
 
 import providers from '$lib/server/providers';
-import { AUTH_SECRET } from '$env/static/private';
 
 // hook for auth.js oidc authentication
 export const { handle, signIn, signOut } = SvelteKitAuth({
 	trustHost: true,
+	useSecureCookies: process.env.NODE_ENV === 'production',
 	providers: providers,
 	callbacks: {
 		async jwt({ token, account }) {

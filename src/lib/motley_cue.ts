@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 type Fetch = (input: URL | RequestInfo, init?: RequestInit | undefined) => Promise<Response>;
 
-const ABORT_TIMEOUT = 1000;
+const ABORT_TIMEOUT = 10000;
 
 export const loadOps = async (fetch: Fetch, mcEndpoint: URL) => {
 	const url = new URL(mcEndpoint);

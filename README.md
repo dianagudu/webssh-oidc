@@ -39,7 +39,8 @@ To run the docker image, you first need to configure the environment variables.
 cp .env.example .env
 ```
 
-Then create OIDC clients with the providers you want to use and add them to the `config/default.yml` file (see [config/default.yml.example](config/default.yml.example) for an example configuration).
+Then create OIDC clients with the providers you want to use and add them to the yml config file in `config` (see [config/default.yml.example](config/default.yml.example) for an example configuration). If you're running the app locally or without tls, name the file `config/development.yml` and set `NODE_ENV=development` in the `.env` file. In production, the file should be named `config/production.yml` and NODE_ENV should be set to `production`.
+
 The redirect URI should be `http://localhost:8444/auth/callback/{provider_id}`, where `{provider_id}` is the id of the OIDC provider.
 
 List of supported providers and their corresponding ids:
