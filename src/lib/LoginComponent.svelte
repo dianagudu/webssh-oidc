@@ -40,6 +40,18 @@
 
 	let filteredOps: string[] | undefined;
 
+	const providerCache = new Map<string, string[]>();
+
+	async function loadOpsWrapper(fetch: typeof window.fetch, endpoint: URL) {
+		if (providerCache.has(endpoint.toString())) {
+			return providerCache.get(endpoint.toString()) ?? [];
+		}
+
+		const OPs = await loadOps(fetch, endpoint);
+		providerCache.set(endpoint.toString(), OPs);
+		return OPs;
+	}
+
 	onMount(async () => {
 		try {
 			$uiBlock = true;
@@ -66,11 +78,9 @@
 				console.error(`Invalid Motley Cue API endpoint: ${CONFIG.mcEndpoint}`);
 			}
 
-			defaultOps = await loadOps(fetch, mcEndpoint);
+			defaultOps = await loadOpsWrapper(fetch, mcEndpoint);
 			supportedOps = [...defaultOps];
-			filteredOps = supportedOps.filter((value: string) =>
-				Object.keys(providers).includes(value)
-			);
+			filteredOps = supportedOps.filter((value: string) => Object.keys(providers).includes(value));
 		} catch (e) {
 			defaultMc = { ...resetHost };
 			mcHost = { ...resetHost };
@@ -95,11 +105,6 @@
 		clear();
 		timeout = setTimeout(() => reloadOPs(e), 200);
 	};
-	const debouncedResetOPs = () => {
-		clearTimeout(timeout);
-		clear();
-		timeout = setTimeout(() => resetOPs(), 200);
-	};
 
 	const reloadOPs = async ({ detail }: CustomEvent<Host>) => {
 		mcHost = { ...detail };
@@ -109,9 +114,7 @@
 		// for the default motley_cue server, use the pre-loaded OPs
 		if (JSON.stringify(mcHost) === JSON.stringify(defaultMc)) {
 			supportedOps = defaultOps;
-			filteredOps = supportedOps.filter((value: string) =>
-				Object.keys(providers).includes(value)
-			);
+			filteredOps = supportedOps.filter((value: string) => Object.keys(providers).includes(value));
 			validMc = true;
 			return;
 		}
@@ -119,13 +122,11 @@
 		// for other motley_cue servers, load the OPs from the server
 		try {
 			$uiBlock = true;
-			supportedOps = await loadOps(fetch, mcEndpoint);
+			supportedOps = await loadOpsWrapper(fetch, mcEndpoint);
 			if (!supportedOps || !supportedOps.length) {
 				throw new Error('No supported OPs');
 			}
-			filteredOps = supportedOps.filter((value: string) =>
-				Object.keys(providers).includes(value)
-			);
+			filteredOps = supportedOps.filter((value: string) => Object.keys(providers).includes(value));
 			validMc = true;
 		} catch (e) {
 			supportedOps = [];
@@ -159,10 +160,14 @@
 
 			let op = providers[selectedOp];
 			let opInfo = await loadOpInfo(fetch, mcEndpoint, selectedOp);
-			let callbackUrl = '/terminal'
-				+ '?mcEndpoint=' + encodeURIComponent(mcEndpoint.toString())
-				+ '&sshHostname=' + encodeURIComponent(sshHost.hostname)
-				+ '&sshPort=' + sshHost.port.toString();
+			let callbackUrl =
+				'/redir' +
+				'?mcEndpoint=' +
+				encodeURIComponent(mcEndpoint.toString()) +
+				'&sshHostname=' +
+				encodeURIComponent(sshHost.hostname) +
+				'&sshPort=' +
+				sshHost.port.toString();
 			await signIn(op.id, { callbackUrl: callbackUrl }, { scope: opInfo.scopes.join(' ') });
 		} catch (e) {
 			$uiBlock = false;
@@ -204,7 +209,7 @@
 						}}
 					>
 						<div slot="selectedValue" let:value>
-							<MyProviderOption provider_issuer={value || ""} />
+							<MyProviderOption provider_issuer={value || ''} />
 						</div>
 						<div slot="option" let:value>
 							<MyProviderOption provider_issuer={value} />
@@ -214,37 +219,39 @@
 			</div>
 			<div class="flex items-center pt-2 pb-1 px-1">
 				<input
-					id="advanced-settings" type="checkbox"
-					checked={advanced} 
-					on:change={() => advanced = !advanced}
+					id="advanced-settings"
+					type="checkbox"
+					checked={advanced}
+					on:change={() => (advanced = !advanced)}
 					class="w-4 h-4 bg-mc-gray-100 rounded-md"
-					/>
+				/>
 				<label
 					for="advanced-settings"
 					class="ms-2 text-sm font-medium text-mc-gray dark:text-mc-gray-200"
-				>Show advanced settings</label>
+					>Show advanced settings</label
+				>
 			</div>
 			{#if advanced}
-			<div in:slide|global={{ duration: 300 }} out:slide|global={{ duration: 300 }}>
-				<MyInputHost
-					title="motley_cue"
-					host={mcHost}
-					defaultHost={defaultMc}
-					showProtocol={true}
-					on:change={debouncedReloadOPs}
-					disabled={$uiBlock}
-				/>
-				<MyInputHost
-					title="SSH"
-					host={sshHost}
-					defaultHost={defaultSsh}
-					disabled={$uiBlock}
-					on:change={({ detail }) => {
-						sshHost = { ...detail };
-						validSsh = true;
-					}}
-				/>
-			</div>
+				<div in:slide|global={{ duration: 300 }} out:slide|global={{ duration: 300 }}>
+					<MyInputHost
+						title="motley_cue"
+						host={mcHost}
+						defaultHost={defaultMc}
+						showProtocol={true}
+						on:change={debouncedReloadOPs}
+						disabled={$uiBlock}
+					/>
+					<MyInputHost
+						title="SSH"
+						host={sshHost}
+						defaultHost={defaultSsh}
+						disabled={$uiBlock}
+						on:change={({ detail }) => {
+							sshHost = { ...detail };
+							validSsh = true;
+						}}
+					/>
+				</div>
 			{/if}
 		</div>
 

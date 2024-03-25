@@ -2,8 +2,7 @@
 // for information about these interfaces
 // and what to do when importing types
 
-import type { TerminalSessionInfo } from '$lib/server/terminalsessions';
-import type { LoginParams } from '$lib/types';
+import type { UserSession } from '$lib/server/sessions';
 
 interface AuthSession {
 	user: {
@@ -21,8 +20,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			session: null | AuthSession;
-			terminalSessions: TerminalSessionInfo[];
-			loginParams: LoginParams;
+			userSession: UserSession;
 		}
 		// interface PageData {}
 		// interface Platform {}

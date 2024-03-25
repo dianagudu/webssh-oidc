@@ -7,7 +7,7 @@ services:
     # image: webssh-oidc
     restart: on-failure
     ports:
-      - "8444:8444"
+      - '8444:8444'
     volumes:
       - ./config:/app/config
       - ./config/docs/:/app/build/client/docs
