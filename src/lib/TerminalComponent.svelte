@@ -23,11 +23,11 @@
 	function onResize(entry: ResizeObserverEntry) {
 		width = entry.contentRect.width;
 		height = entry.contentRect.height;
-		console.log(width, height);
-		// HACK: disable resizing for firefox for now
-		if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
-			term && term.resize();
-		}
+		// console.log(width, height);
+		// // HACK: disable resizing for firefox for now
+		// if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
+		// 	term && term.resize();
+		// }
 	}
 
 	const dispatch = createEventDispatcher<{ closed: TerminalSessionInfo }>();
