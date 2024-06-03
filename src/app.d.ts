@@ -13,6 +13,7 @@ interface AuthSession {
 	};
 	expiresAt: number;
 	accessToken: string;
+	profile: { [key: string]: string | number | boolean | string[] };
 }
 
 declare global {
