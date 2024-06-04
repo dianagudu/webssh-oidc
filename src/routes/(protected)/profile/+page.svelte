@@ -17,9 +17,10 @@
 		},
 		sshUser: data.username,
 		// pretty print json with new lines
-		profile: data.session?.profile
+		profile: data.session?.profile,
+		userinfo: data.session?.userinfo
 	};
-	console.log('profile:', loginParams.profile);
+	const displayInfo = JSON.stringify({ ...loginParams.profile, ...loginParams.userinfo }, null, 4);
 
 	onMount(async () => {
 		$uiBlock = false;
@@ -35,9 +36,5 @@
 		<br />
 		Your local username is: <span class="font-semibold text-mc-orange">{loginParams.sshUser}</span>.
 	</p>
-	<MyCodeArea
-		label="User info from OIDC provider"
-		id="sshCmd"
-		value={JSON.stringify(loginParams.profile, null, ' ')}
-	/>
+	<MyCodeArea label="User info from OIDC provider" id="sshCmd" value={displayInfo} />
 </div>

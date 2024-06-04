@@ -39,6 +39,10 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 				expiresAt: token.expiresAt,
 				profile: token.profile
 			};
+			if (token.user) {
+				if (new_session.userinfo) new_session.userinfo = { ...new_session.userinfo, ...token.user };
+				else new_session.userinfo = token.user;
+			}
 			return new_session;
 		}
 	}
@@ -55,6 +59,7 @@ declare module '@auth/core/types' {
 		expiresAt: number;
 		accessToken: string;
 		profile: { [key: string]: string | number | boolean | string[] };
+		userinfo: { [key: string]: string | number | boolean | string[] } | {};
 	}
 }
 
