@@ -4,10 +4,10 @@
 	import { uiBlock } from '$lib/stores';
 </script>
 
-<div class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+<div class="relative grid grid-rows-[1fr] h-fit min-h-full w-screen sm:w-4/5 mx-auto pb-14 pt-24">
 	<slot />
 
-	<div class="footer text-mc-blue">
+	<div class="absolute bottom-0 left-0 right-0 h-10 text-center text-mc-blue">
 		<p>
 			<a href="/privacy"> Privacy Policy </a> |
 			<a href="https://github.com/dianagudu/webssh-oidc">
@@ -19,6 +19,7 @@
 			>
 		</p>
 	</div>
+
 	{#if $uiBlock}
 		<!-- loading overlay -->
 		<div
@@ -53,13 +54,3 @@
 		<!-- end loading overlay -->
 	{/if}
 </div>
-
-<style>
-	.footer {
-		position: absolute;
-		bottom: 0;
-		width: 100%;
-		height: 2.5rem;
-		text-align: center;
-	}
-</style>

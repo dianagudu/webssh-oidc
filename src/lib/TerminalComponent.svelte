@@ -1,5 +1,5 @@
 <script lang="ts">
-	import 'xterm/css/xterm.css';
+	import '@xterm/xterm/css/xterm.css';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { resize } from 'svelte-resize-observer-action';
 	import { errorMessage } from '$lib/stores';
@@ -23,10 +23,22 @@
 	function onResize(entry: ResizeObserverEntry) {
 		width = entry.contentRect.width;
 		height = entry.contentRect.height;
-		// console.log(width, height);
-		// // HACK: disable resizing for firefox for now
-		// if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
-		// 	term && term.resize();
+		// console.log(
+		// 	'resize detected.',
+		// 	entry,
+		// 	term && term.proposeDimensions(),
+		// 	width,
+		// 	height,
+		// 	term && term.currentDimensions()
+		// );
+		const current = term?.currentDimensions() ?? { cols: 80, rows: 24 };
+		const proposed = term?.proposeDimensions() ?? { cols: 80, rows: 24 };
+
+		if (term && (current.cols !== proposed.cols || current.rows !== proposed.rows)) {
+			term.resize(proposed);
+		}
+
+		// term && term.resize();
 		// }
 	}
 
@@ -82,15 +94,32 @@
 			term.initSocket(ws);
 		}
 	});
+
+	function resizeAction(elem: HTMLElement, callback: (entry: ResizeObserverEntry) => void) {
+		const observer = new ResizeObserver((entries) => {
+			for (let entry of entries) {
+				callback(entry);
+			}
+		});
+
+		observer.observe(elem);
+
+		return {
+			destroy() {
+				observer.unobserve(elem);
+				observer.disconnect();
+			}
+		};
+	}
 </script>
 
 <div
-	class="rounded overflow-clip bg-black shadow-md shadow-neutral-400 p-2"
+	class="rounded overflow-hidden bg-black shadow-md shadow-neutral-400 p-2 h-full"
 	bind:this={termDiv}
-	use:resize={onResize}
+	use:resizeAction={onResize}
 />
 
-<style>
+<style lang="postcss">
 	:global(.xterm .xterm-viewport) {
 		/* see : https://github.com/xtermjs/xterm.js/issues/3564#issuecomment-1004417440 */
 		width: initial !important;

@@ -1,6 +1,6 @@
-import { Terminal as xterm } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import { WebLinksAddon } from 'xterm-addon-web-links';
+import { Terminal as xterm } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
 
 export class Terminal {
 	handle: xterm;
@@ -47,9 +47,23 @@ export class Terminal {
 		});
 	}
 
-	public resize() {
-		if (this._fitAddon) {
-			this._fitAddon.fit();
+	public resize(dimensions: { rows: number; cols: number } | undefined) {
+		if (!dimensions) {
+			return this._fitAddon.fit();
 		}
+		this.handle.resize(dimensions.cols, dimensions.rows);
+	}
+
+	public proposeDimensions() {
+		if (this._fitAddon) {
+			return this._fitAddon.proposeDimensions();
+		}
+	}
+
+	public currentDimensions() {
+		return {
+			rows: this.handle.rows,
+			cols: this.handle.cols
+		};
 	}
 }

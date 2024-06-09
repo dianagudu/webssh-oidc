@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { errorMessage, uiBlock } from '$lib/stores';
 	import MyCodeArea from '$lib/MyCodeArea.svelte';
-	import { signOut } from '@auth/sveltekit/client';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -16,7 +15,6 @@
 			port: data.userSession.sshPort
 		},
 		sshUser: data.username,
-		// pretty print json with new lines
 		profile: data.session?.profile,
 		userinfo: data.session?.userinfo
 	};
@@ -27,7 +25,7 @@
 	});
 </script>
 
-<div class="w-screen max-w-4xl px-4 mt-8 space-6 flex flex-col gap-4">
+<div class="flex flex-col gap-4 h-fit">
 	<h1 class="text-2xl font-semibold text-mc-gray">Welcome, {loginParams.user}!</h1>
 	<p class="text-mc-gray">
 		You are logged in with the OIDC provider: <span class="font-semibold text-mc-orange"

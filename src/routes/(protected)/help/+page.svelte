@@ -45,7 +45,7 @@
 	});
 </script>
 
-<div class="w-screen max-w-4xl px-4 mt-10 space-6 flex flex-col gap-4">
+<div class="flex flex-col gap-4 h-fit">
 	<h1 class="text-2xl font-semibold text-mc-gray">Commandline Login</h1>
 	<p class="text-mc-gray">
 		The alternative to this web SSH login is to use the command line. There are several options to
