@@ -9,7 +9,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 	useSecureCookies: process.env.NODE_ENV === 'production',
 	providers: providers,
 	callbacks: {
-		async jwt({ token, account }) {
+		async jwt({ token, account, user, profile }) {
 			// Persist the OIDC access_token to the token right after signin
 			if (account) {
 				// check if access token is present
@@ -21,6 +21,14 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 					token.expiresAt = Date.now() + account.expires_in;
 				}
 			}
+			if (profile) {
+				if (token.profile) token.profile = { ...token.profile, ...profile };
+				else token.profile = profile;
+			}
+			if (user) {
+				if (token.user) token.user = { ...token.user, ...user };
+				else token.user = user;
+			}
 			return token;
 		},
 		async session({ session, token }) {
@@ -28,8 +36,13 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 			const new_session = {
 				...session,
 				accessToken: token.accessToken,
-				expiresAt: token.expiresAt
+				expiresAt: token.expiresAt,
+				profile: token.profile
 			};
+			if (token.user) {
+				if (new_session.userinfo) new_session.userinfo = { ...new_session.userinfo, ...token.user };
+				else new_session.userinfo = token.user;
+			}
 			return new_session;
 		}
 	}
@@ -45,6 +58,8 @@ declare module '@auth/core/types' {
 		};
 		expiresAt: number;
 		accessToken: string;
+		profile: { [key: string]: string | number | boolean | string[] };
+		userinfo: { [key: string]: string | number | boolean | string[] } | {};
 	}
 }
 

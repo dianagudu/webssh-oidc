@@ -5,6 +5,6 @@
 	export let data: PageData;
 </script>
 
-<div class="w-full max-w-2xl space-y-8">
+<div class="grid place-items-center items-center justify-stretch">
 	<LoginComponent providers={data.providers} />
 </div>

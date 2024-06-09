@@ -47,8 +47,10 @@
 <style lang="postcss">
 	.textarea {
 		word-wrap: break-word;
+		word-break: break-all;
+		white-space: pre-wrap;
 		@apply font-mono;
-		@apply block resize-none p-2.5 w-full text-sm text-mc-gray bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500;
+		@apply block bg-transparent resize-none p-2.5 w-full text-sm text-mc-gray rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500;
 		/* @apply dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500; */
 	}
 

@@ -11,3 +11,8 @@
 		--color-mc-gray: 102 102 102;
 	} */
 }
+
+html, body {
+	height: 100%;
+	min-height: 100%;
+}
