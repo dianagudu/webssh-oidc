@@ -17,6 +17,11 @@ html, body {
 	min-height: 100%;
 }
 
+html.dark {
+	background-color: #111827; /* gray-900 */
+}
+
 html.dark body {
+	background-color: #111827; /* gray-900 */
 	color: #e5e7eb; /* gray-200 */
 }
