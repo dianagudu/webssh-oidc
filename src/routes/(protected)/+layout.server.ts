@@ -56,6 +56,7 @@ export const load = (async ({ locals }) => {
 		terminalSessions: locals.userSession.terminals,
 		userSession: locals.userSession,
 		username: username,
+		sshHostname: CONFIG.sshHostname,
 		oinitPrivateKey: session.oinitPrivateKey,
 		oinitCertificate: session.oinitCertificate,
 		session: locals.session
