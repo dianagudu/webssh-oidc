@@ -134,7 +134,7 @@ export const deployUser = async (fetch: Fetch, mcEndpoint: URL, accessToken: str
 };
 
 export const getUserStatus = async (fetch: Fetch, mcEndpoint: URL, accessToken: string) => {
-	const url = appendPath(mcEndpoint, 'user/get_status');
+	const url = appendPath(mcEndpoint, 'user/status');
     logger.debug('[motley_cue] getUserStatus: mcEndpoint =', mcEndpoint.toString());
     logger.debug('[motley_cue] getUserStatus: final URL =', url.toString());
 
@@ -157,7 +157,10 @@ export const getUserStatus = async (fetch: Fetch, mcEndpoint: URL, accessToken: 
 
 		const schema = z.object({
 			state: z.string(),
-			message: z.string()
+			message: z.string(),
+			// username is populated by /user/status when an account exists;
+			// omitted (via response_model_exclude_unset) when not_deployed.
+			username: z.string().optional()
 		});
 
 		const parsedAPIResponse = schema.safeParse(jsonRaw);
@@ -188,7 +191,9 @@ export const getSshUser = async (fetch: Fetch, mcEndpoint: URL, accessToken: str
 			return { username: deployment.credentials.ssh_user };
 		}
 	} else {
-		const username = status.message.split(' ')[1];
+		// Prefer the typed username field from /user/status; fall back to
+		// parsing it out of the human-readable message for older motley_cue.
+		const username = status.username ?? status.message.split(' ')[1];
         logger.debug('[motley_cue] getSshUser: extracted username =', username);
 		return { username };
 	}
