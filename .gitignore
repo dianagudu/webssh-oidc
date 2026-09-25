@@ -12,3 +12,5 @@ config/development.yml
 config/production.yml
 config/docs/privacy.md
 .vscode/
+CLAUDE.md
+config/default.html
