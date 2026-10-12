@@ -85,7 +85,7 @@
 		<li>
 			The web client for ssh:
 			<a
-				href="https://github.com/dianagudu/webssh-oidc"
+				href="https://github.com/ssh-oidc/webssh-oidc"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="text-mc-blue-500 underline"

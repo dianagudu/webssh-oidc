@@ -10,7 +10,7 @@
 	<div class="absolute bottom-0 left-0 right-0 h-10 text-center text-mc-blue">
 		<p>
 			<a href="/privacy"> Privacy Policy </a> |
-			<a href="https://github.com/dianagudu/webssh-oidc">
+			<a href="https://github.com/ssh-oidc/webssh-oidc">
 				<Icon icon="mdi:github" class="inline" /> Source
 			</a>
 			|
